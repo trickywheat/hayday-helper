@@ -15,7 +15,7 @@ exports.handler = async (event) => {
     headers: {
         'Content-Type': 'application/json',
     },
-    body: '{"error": "Server fault"}',
+    body: '{"message": "I\'m a teapot"}',
   };
 
   const signature = event.headers['x-signature-ed25519'];
@@ -28,7 +28,7 @@ exports.handler = async (event) => {
 
   if (!isValidRequest) {
     responseJson.status = 401;
-    responseJson.body = '{"error": "Bad request signature"}';
+    responseJson.body = '{"message": "Bad request signature"}';
   } else {
     if ((event.requestContext.http.method === "POST") && (event.body.length > 1)) {
         const jsonPayload = JSON.parse(event.body);
@@ -40,12 +40,5 @@ exports.handler = async (event) => {
     }
   }
   
-  // const response = {
-  //     statusCode: 200,
-  //     headers: {
-  //         'Content-Type': 'text/html',
-  //     },
-  //     body: html,
-  // };
   return responseJson;
 };
