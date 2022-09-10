@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   console.log(JSON.stringify(event));
 
   let responseJson = {
-    statusCode: 500,
+    statusCode: 418,
     headers: {
         'Content-Type': 'application/json',
     },
