@@ -10,8 +10,14 @@ module.exports = {
     "description": "ping!  Replies with pong."
   },
 
-  execute(msg, args) {
-    msg.reply('I am alive!');
-    // msg.channel.send('bar');
+  execute() {
+    const responseJson = {
+      "type": 4, 
+      "data": { 
+        "content": "PONG!" 
+      }
+    };
+
+    return responseJson;
   },
 };

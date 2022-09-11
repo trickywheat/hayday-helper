@@ -3,7 +3,7 @@ const discordInteractions = require('discord-interactions');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
 const path = require('node:path');
-let commands = {};
+let botCommands = {};
 
 exports.handler = async (event) => {
   console.log(JSON.stringify(event));
@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     headers: {
         'Content-Type': 'application/json',
     },
-    body: '{"message": "I\'m a teapot"}',
+    body: '{"message": "I am a teapot"}',
   };
 
   let isValidRequest = false;
@@ -41,32 +41,39 @@ exports.handler = async (event) => {
         // Handle Pings
         responseJson.statusCode = 200;
         responseJson.body = '{"type": 1}';
-      } else if (requestJSON.data.name == 'ping') {
-        responseJson.statusCode = 200;
-        responseJson.body = '{"type": 4, "data": { "content": "PONG!" }}';
       } else {
-        responseJson.statusCode = 200;
-        responseJson.body = '{"type": 4, "data": { "content": "Command does not exist." }}';
+        botCommands = loadCommands();
+        console.log("Bot has these commands: " + JSON.stringify(botCommands));
+        console.log("Discord sent command: " + requestJSON.data.name);
+        if (botCommands.hasOwnProperty(requestJSON.data.name.trim())) {
+          responseJson.statusCode = 200;
+          responseJson.body = JSON.stringify(botCommands[requestJSON.data.name].execute());
+        } else {
+          responseJson.statusCode = 200;
+          responseJson.body = '{"type": 4, "data": { "content": "Command (' + requestJSON.data.name + ') does not exist." }}'
+        }
       }
     }
   }
-  
+
+  console.log("respondJson: " + JSON.stringify(responseJson));
   return responseJson;
 };
 
 
 function loadCommands() {
-  const commandsPath = path.join(__dirname);
+  const commandsPath = path.join(__dirname + '/commands');
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file != 'index.js');
+  let pendingCommands = {};
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
 
-    commands[command.discordSlashMetadata.name] = command;
+    pendingCommands[command.discordSlashMetadata.name] = command;
 
-    console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + commands[command.discordSlashMetadata.name].type + ") " + commands[command.discordSlashMetadata.name].description);
-    
+    console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.type + ") " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.description);
   }
 
+  return pendingCommands;
 }
