@@ -1,7 +1,7 @@
 {
-  "name": "node-js-discord-bot-github-template",
-  "version": "1.0.0",
-  "description": "Discord bot template",
+  "name": "hayday-bot",
+  "version": "0.1.0",
+  "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
