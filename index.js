@@ -1,4 +1,4 @@
-const nacl = require('tweetnacl'); 
+const discordInteractions = require('discord-interactions');
 
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
@@ -25,11 +25,8 @@ exports.handler = async (event) => {
     const signature = event.headers['x-signature-ed25519'];
     const timestamp = event.headers['x-signature-timestamp'];
     const publicKey = process.env.DISCORD_BOT_PUBLIC_KEY;
-    isValidRequest = nacl.sign.detached.verify(
-      Buffer.from(timestamp + event.body), 
-      Buffer.from(signature, 'hex'),
-      Buffer.from(publicKey, 'hex')
-    );
+
+    isValidRequest = discordInteractions.verifyKey(event.body, signature, timestamp, publicKey);
   }
 
   if (!isValidRequest) {
