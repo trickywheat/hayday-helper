@@ -18,7 +18,8 @@ exports.handler = async (event) => {
 
   let isValidRequest = false;
 
-  if (event.headers.hasOwnProperty("postman-verify") && (event.headers['postman-verify'] === process.env.POSTMAN_VERIFY)) {
+  if (event.headers.hasOwnProperty("authorization") && 
+     (event.headers['authorization'] === "Bearer " + process.env.POSTMAN_VERIFY)) {
     isValidRequest = true;
   } else {
     // Get valid information
