@@ -45,13 +45,17 @@ exports.handler = async (event) => {
       } else {
         botCommands = loadCommands();
         console.log("Bot has these commands: " + JSON.stringify(botCommands));
-        console.log("Discord sent command: " + requestJSON.data.name);
-        if (botCommands.hasOwnProperty(requestJSON.data.name.trim())) {
-          responseJson.statusCode = 200;
-          responseJson.body = JSON.stringify(botCommands[requestJSON.data.name].execute());
-        } else {
-          responseJson.statusCode = 200;
-          responseJson.body = '{"type": 4, "data": { "content": "Command (' + requestJSON.data.name + ') does not exist." }}'
+
+        if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
+          const command = requestJSON.data.name.trim() || requestJSON.data.custom_id.trim() || "does-not-exist";
+          console.log("Discord sent command: " + requestJSON.data.command);
+          if (botCommands.hasOwnProperty(command)) {
+            responseJson.statusCode = 200;
+            responseJson.body = JSON.stringify(await botCommands[requestJSON.data.name].execute(requestJSON));
+          } else {
+            responseJson.statusCode = 200;
+            responseJson.body = '{"type": 4, "data": { "content": "Command (' + requestJSON.data.name + ') does not exist." }}'
+          }
         }
       }
     }
