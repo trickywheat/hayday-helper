@@ -1,6 +1,6 @@
 /*
   RequestHelpMenu Command
-  Type: CHAT_INPUT
+  Type: Message Component
 */
 
 module.exports = {
