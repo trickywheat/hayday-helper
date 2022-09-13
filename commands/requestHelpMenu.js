@@ -31,6 +31,11 @@ module.exports = {
               "description": "YOU are requesting someone to put up help tasks."
           },
           {
+            "label": "Derby Task Request",
+            "value": "derbytaskrequest",
+            "description": "Tell us you want to complete a task on the derby board."
+          },
+          {
               "label": "Other",
               "value": "other",
               "description": "Anything else not listed."
@@ -85,6 +90,10 @@ module.exports = {
         
         case "helptask":
           placeholder = "I need some trees and bushes for my help task."
+          break;
+        
+        case "derbytaskrequest":
+          placeholder = "I can pick up the mining task next."
           break;
         
         case "other":

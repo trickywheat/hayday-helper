@@ -48,10 +48,12 @@ module.exports = {
         "Content-Type": "application/json"
       },
       "body": JSON.stringify(messageComponents)
-    }
+    };
 
-    const response = await fetch(url, postToChannelJSON);
-    console.log(response);
+    console.log("Sending post embed: " + JSON.stringify(postToChannelJSON));
+    const postEmbedRequest = await fetch(url, postToChannelJSON);
+    const postEmbedRequestJSON = await postEmbedRequest.json();
+    console.log(postEmbedRequestJSON);
     return responseJson;
   },
 };
