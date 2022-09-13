@@ -51,19 +51,18 @@ module.exports = {
       "type": 9,
       "data": { 
         "custom_id": "requestHelpMessage",
-        "title": "Your message?",
+        "title": "Tell us about your request",
         "components": [
           {
             "type": 1,
-            "components": [
-                {
-                    "type": 4,
-                    "custom_id": "requestHelp",
-                    "required": true,
-                    "style": 2,
-                    "placeholder": "I'm a placeholder"
-                }
-            ]
+            "components": [{
+              "type": 4,
+              "custom_id": "requestHelp",
+              "style": 2,
+              "label": "Try to be descriptive, but brief.",
+              "required": true,
+              "placeholder": "I'm a placeholder"
+            }]
         }]
         
       }
