@@ -30,14 +30,30 @@ module.exports = {
     const postEmbedRequestJSON = await sendRequestEmbed(guildMember, requestHelpChoiceLabel, requestHelpMessage); 
 
     // Create Thread
-    const url = `https://discord.com/api/v10/channels/${postEmbedRequestJSON.channel_id}/messages/${postEmbedRequestJSON.id}/threads`;
-    const threadDetails = {
-      "name": `${guildMember} request - ` + requestHelpChoiceLabel,
-    };
+    const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
 
-    console.log("Sending thread request...");
-    const startThreadRequestJSON = await sendPayloadToDiscord(url, threadDetails);
-    console.log("Thread request response: " + JSON.stringify(startThreadRequestJSON));
+    // Send Inital Thread message
+    const url = `https://discord.com/api/v10/channels/${createThreadRequestJSON.id}/messages`;
+    let messageComponents = {
+      "content": `Can you help out ${guildMember}?\nDiscuss your request in this thread.  Once you are done, click the buttom below to delete the thread.  **WARNING:** Once a thread is deleted, it cannot be recovered.`,
+      "components": [
+        {
+          "type": 1,
+          "components": [
+              {
+                  "type": 2,
+                  "style": 4,
+                  "label": "Delete Thread",
+                  "custom_id": "deleteThread"
+              }
+          ]
+      }]
+    }
+
+    console.log("Sending initial thread message...");
+    const initialThreadMessageJSON = await sendPayloadToDiscord(url, messageComponents);
+    console.log("initial Thread Message Response: " + JSON.stringify(initialThreadMessageJSON));
+  
 
     return responseJson;
   }
@@ -66,6 +82,20 @@ async function sendRequestEmbed(guildMember, label, placeholder) {
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
+}
+
+
+async function createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel) {
+  const url = `https://discord.com/api/v10/channels/${postEmbedRequestJSON.channel_id}/messages/${postEmbedRequestJSON.id}/threads`;
+  const threadDetails = {
+    "name": `${guildMember} request - ` + requestHelpChoiceLabel,
+  };
+
+  console.log("Sending thread request...");
+  const startThreadRequestJSON = await sendPayloadToDiscord(url, threadDetails);
+  console.log("Thread request response: " + JSON.stringify(startThreadRequestJSON));
+
+  return startThreadRequestJSON;
 }
 
 
