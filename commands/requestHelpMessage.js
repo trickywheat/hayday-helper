@@ -4,6 +4,7 @@
 */
 
 require('dotenv').config({"path": "../.env" });
+const serverConfig = require('serverConfig.json');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 module.exports = {
@@ -27,7 +28,7 @@ module.exports = {
     const requestHelpChoiceLabel = requestHelpMenu.discordSlashMetadata.options[0].choices.find(element => element.value === requestType).label;
 
     // Build embed for the request channel
-    const postEmbedRequestJSON = await sendRequestEmbed(guildMember, requestHelpChoiceLabel, requestHelpMessage); 
+    const postEmbedRequestJSON = await sendRequestEmbed(requestJSON, guildMember, requestHelpChoiceLabel, requestHelpMessage); 
 
     // Create Thread
     const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
@@ -44,8 +45,8 @@ module.exports = {
 
 
 // TO DO: fix this for production
-async function sendRequestEmbed(guildMember, label, placeholder) {
-  const targetChannel = "1015975409160032276";  // TODO: Fix this for Production
+async function sendRequestEmbed(requestJSON, guildMember, label, placeholder) {
+  const targetChannel = serverConfig[requestJSON.guild_id].requestChannels.all;  // TODO: Fix this for Production
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
   let messageComponents = {
     "embeds": [
