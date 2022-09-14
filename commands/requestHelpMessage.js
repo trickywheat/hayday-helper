@@ -14,7 +14,7 @@ module.exports = {
   },
 
   async execute(requestJSON) {
-    let responseJson = {
+    const responseJson = {
       "type": 6
     };
 
@@ -32,24 +32,11 @@ module.exports = {
     // Create Thread
     const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
 
+    // Invite Guild Member
+    const inviteGuildMemberToThreadJSON = await inviteGuildMemberToThread(createThreadRequestJSON, requestJSON.member);
+
     // Send Inital Thread message
     const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, guildMember);
-
-    // Invite Guild Member
-    const url = `https://discord.com/api/v10/channels/${initialThreadMessageJSON.channel_id}/thread-members/${requestJSON.member.user.id}`;
-
-    // Cannot use function since this is a PUT
-    const payloadJSON = {
-      "method": 'put',
-      "headers": {
-        "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
-      }
-    };
-  
-    console.log("Sending payload: " + JSON.stringify(payloadJSON));
-    const payloadResponse = await fetch(url, payloadJSON);
-    console.log("payload reply: " + JSON.stringify(payloadResponse));  // should return status 204
-
 
     return responseJson;
   }
@@ -119,6 +106,22 @@ async function sendInitialThreadMessage(createThreadRequestJSON, guildMember) {
   console.log("initial Thread Message Response: " + JSON.stringify(initialThreadMessageJSON));
 
   return initialThreadMessageJSON;
+}
+
+async function inviteGuildMemberToThread(createThreadRequestJSON, guildMember) {
+  const url = `https://discord.com/api/v10/channels/${createThreadRequestJSON.id}/thread-members/${guildMember.user.id}`;
+
+  // Cannot use function since this is a PUT
+  const payloadJSON = {
+    "method": 'put',
+    "headers": {
+      "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+    }
+  };
+
+  console.log("Sending payload: " + JSON.stringify(payloadJSON));
+  const payloadResponse = await fetch(url, payloadJSON);
+  console.log("payload reply: " + JSON.stringify(payloadResponse));  // should return status 204
 }
 
 
