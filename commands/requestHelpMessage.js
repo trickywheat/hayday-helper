@@ -33,27 +33,23 @@ module.exports = {
     const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
 
     // Send Inital Thread message
-    const url = `https://discord.com/api/v10/channels/${createThreadRequestJSON.id}/messages`;
-    let messageComponents = {
-      "content": `Can you help out ${guildMember}?\nDiscuss your request in this thread.  Once you are done, click the buttom below to delete the thread.  **WARNING:** Once a thread is deleted, it cannot be recovered.`,
-      "components": [
-        {
-          "type": 1,
-          "components": [
-              {
-                  "type": 2,
-                  "style": 4,
-                  "label": "Delete Thread",
-                  "custom_id": "deleteThread"
-              }
-          ]
-      }]
-    }
+    const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, guildMember);
 
-    console.log("Sending initial thread message...");
-    const initialThreadMessageJSON = await sendPayloadToDiscord(url, messageComponents);
-    console.log("initial Thread Message Response: " + JSON.stringify(initialThreadMessageJSON));
+    // Invite Guild Member
+    const url = `https://discord.com/api/v10/channels/${initialThreadMessageJSON.channel_id}/thread-members/${requestJSON.member.user.id}`;
+
+    // Cannot use function since this is a PUT
+    const payloadJSON = {
+      "method": 'put',
+      "headers": {
+        "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
+      }
+    };
   
+    console.log("Sending payload: " + JSON.stringify(payloadJSON));
+    const payloadResponse = await fetch(url, payloadJSON);
+    console.log("payload reply: " + JSON.stringify(payloadResponse));  // should return status 204
+
 
     return responseJson;
   }
@@ -97,6 +93,34 @@ async function createThread(postEmbedRequestJSON, guildMember, requestHelpChoice
 
   return startThreadRequestJSON;
 }
+
+async function sendInitialThreadMessage(createThreadRequestJSON, guildMember) {
+  const url = `https://discord.com/api/v10/channels/${createThreadRequestJSON.id}/messages`;
+
+  // TODO: This will need to be updated for each type of request.
+  const messageComponents = {
+    "content": `Can you help out ${guildMember}?\nDiscuss your request in this thread.  Once you are done, click the buttom below to delete the thread.  **WARNING:** Once a thread is deleted, it cannot be recovered.`,
+    "components": [
+      {
+        "type": 1,
+        "components": [
+            {
+                "type": 2,
+                "style": 4,
+                "label": "Delete Thread",
+                "custom_id": "deleteThread"
+            }
+        ]
+    }]
+  };
+
+  console.log("Sending initial thread message...");
+  const initialThreadMessageJSON = await sendPayloadToDiscord(url, messageComponents);
+  console.log("initial Thread Message Response: " + JSON.stringify(initialThreadMessageJSON));
+
+  return initialThreadMessageJSON;
+}
+
 
 
 async function sendPayloadToDiscord(url, body) {
