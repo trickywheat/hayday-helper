@@ -55,7 +55,13 @@ exports.handler = async (event) => {
             responseJson.body = JSON.stringify(await botCommands[command].execute(requestJSON));
           } else {
             responseJson.statusCode = 200;
-            responseJson.body = '{"type": 4, "data": { "content": "Command (' + command + ') does not exist.  Request Id: `' + event.requestContext.requestId + '`"}}'
+            const responseBody = {
+              "type": 4, 
+              "data": { 
+                "content": "Command (' + command + ') does not exist.  Request Id: `' + event.requestContext.requestId + '`"
+              }
+            };
+            responseJson.body = JSON.stringify(responseBody);
           }
         }
       }

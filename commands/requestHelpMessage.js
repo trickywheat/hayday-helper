@@ -4,7 +4,7 @@
 */
 
 require('dotenv').config({"path": "../.env" });
-const serverConfig = require('serverConfig.json');
+const serverConfig = require('./serverConfig.json');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 module.exports = {
