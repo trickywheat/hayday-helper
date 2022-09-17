@@ -1,4 +1,7 @@
 const discordInteractions = require('discord-interactions');
+const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+
+const client = new LambdaClient({ region: "us-east-1" });
 
 exports.handler = async (event) => {
   console.log("event object: " + JSON.stringify(event));
@@ -38,12 +41,35 @@ exports.handler = async (event) => {
         // Handle Pings
         responseJson.body = '{"type": 1}';
       } else {
-        const responseBody = {
+        let responseBody = {
           "type": 5,
           "data": {
             "flags": 1 << 6
           }
+        };
+
+        // Send payload to interactionWorkflow
+        const commandInput = {
+          FunctionName: "Discord-interactionWorkflow",
+          InvocationType: "Event",
+          Payload: event.body
         }
+  
+        const command = new InvokeCommand(commandInput);
+
+        try {
+          const lambdaResponse = await client.send(command);
+          console.log("Response from Lambda: " + JSON.stringify(lambdaResponse));
+
+          if (lambdaResponse.StatusCode != 202) {
+            responseBody.type = 4;
+            responseBody.data.content = "There was an issue executing `interactionWorkflow`.  requestId=`" + event.requestContext.requestId + "`";
+          }
+        } catch (error) {
+          responseBody.type = 4
+          responseBody.data.content = "There was an issue with `webhookIntake`.  requestId=`" + event.requestContext.requestId + "`"
+        }
+
         responseJson.body = JSON.stringify(responseBody);
       }
     }
