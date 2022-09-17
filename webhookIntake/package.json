@@ -1,0 +1,16 @@
+{
+  "name": "hayday-bot-webhook-intake",
+  "version": "0.1.0",
+  "description": "Processes webhooks sent by Discord.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tricky Wheat",
+  "license": "AGPL",
+  "private": true,
+  "dependencies": {
+    "discord-interactions": "^3.2.0",
+    "winston": "^3.8.2"
+  }
+}
