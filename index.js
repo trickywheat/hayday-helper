@@ -52,7 +52,7 @@ exports.handler = async (event) => {
           if (botCommands.hasOwnProperty(command)) {
             console.log("Executing command module for " + command);
             responseJson.statusCode = 200;
-            responseJson.body = JSON.stringify(await botCommands[command].execute(requestJSON));
+            responseJson.body = JSON.stringify(await botCommands[command].execute(requestJSON, event.requestContext));
           } else {
             responseJson.statusCode = 200;
             const responseBody = {
