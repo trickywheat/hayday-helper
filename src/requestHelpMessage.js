@@ -13,7 +13,7 @@ module.exports = {
     "description": "Processes Request Help Message modal",
   },
 
-  async execute(requestJSON, requestContext) {
+  async execute(requestJSON, lambdaEvent, lambdaContext) {
     let responseJson = {
       "type": 5,
       "data": {
@@ -21,11 +21,15 @@ module.exports = {
       }
     };
 
-    let payloadJSON = requestJSON;
-    payloadJSON.callbackExecute = true;
+    // Build Lambda Payload
+    const payloadJSON = {
+      "callbackExecute": true,
+      "headers": lambdaEvent.headers,
+      "body": lambdaEvent.body
+    }
 
     const commandInput = {
-      FunctionName: "Discord-webhookIntake",
+      FunctionName: lambdaContext.invokedFunctionArn,
       InvocationType: "Event",
       Payload: JSON.stringify(payloadJSON)
     }
@@ -41,11 +45,11 @@ module.exports = {
 
       if (lambdaResponse.StatusCode != 202) {
         responseJson.type = 4;
-        responseJson.data.content = `There was an issue executing \`${commandInput.FunctionName}\`.  requestId=\`${requestContext.requestId}\``;
+        responseJson.data.content = `There was an issue executing \`${commandInput.FunctionName}\`.  requestId=\`${lambdaContext.awsRequestId}\``;
       }
     } catch (error) {
       responseJson.type = 4;
-      responseJson.data.content = `There was an issue with \`webhookIntake\`.  requestId=\`${requestContext.requestId}\``;
+      responseJson.data.content = `There was an issue with \`webhookIntake\`.  requestId=\`${lambdaContext.awsRequestId}\``;
     }
 
     // responseJson.body = JSON.stringify(responseBody);

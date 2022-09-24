@@ -22,12 +22,6 @@ exports.handler = async (event, context) => {
   if (event.hasOwnProperty('headers') && event.headers.hasOwnProperty('authorization') && 
      (event.headers.authorization === "Bearer " + process.env.POSTMAN_VERIFY)) {
     isValidRequest = true;
-  
-  // If has callback property, check that it was triggered by lambda
-  } else if (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true) &&
-      (context.invokedFunctionArn.endsWith(context.functionName))) {
-    console.log("callbackExecute: true");
-    isValidRequest = true;
   } else {
     // Get valid information
     const signature = event.headers['x-signature-ed25519'];
@@ -48,15 +42,8 @@ exports.handler = async (event, context) => {
     // or if it is a callback
     if (((event.requestContext.http.method === "POST") && (event.body.length > 1)) || 
         (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))) {
-      let requestJSON = {};
-
-      if ((event.requestContext.http.method === "POST") && (event.body.length > 1)) 
-        requestJSON = JSON.parse(event.body);
-      else if (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))
-        requestJSON = event;
-
+      const requestJSON = JSON.parse(event.body);
       console.log("requestJson: " + JSON.stringify(requestJSON));
-
 
       // Must be able to respond to a valid PING:
       // https://discord.com/developers/docs/interactions/receiving-and-responding#receiving-an-interaction
@@ -74,10 +61,12 @@ exports.handler = async (event, context) => {
         const botCommand = loadCommand(command);
         if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.hasOwnProperty('callbackExecute') === false)) {
           console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
-          responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event.requestContext));
+          responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
+
         } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.callbackExecute === true)) {
           console.log("Executing callback module for " + botCommand.discordSlashMetadata.name);
-          responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event.requestContext));
+          responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
+
         } else {
           responseJson.statusCode = 200;
           const responseBody = {

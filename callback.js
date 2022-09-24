@@ -7,28 +7,43 @@ const serverConfig = require('./commands/serverConfig.json');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 exports.handler = async (requestJSON) => {
-  console.log(requestJSON);
+  console.log("callback Lambda event object: " + JSON.stringify(requestJSON));
 
-  const requestType = requestJSON.data.components[0].components[0].custom_id.split("_")[1];
-  const requestHelpMessage = requestJSON.data.components[0].components[0].value;
-  const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
+  if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
+    const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
+    console.log("Discord sent command: " + command);
+    const botCommand = loadCommand(command);
 
+    if (botCommand.hasOwnProperty('discordSlashMetadata')) {
+      console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
+      responseJson.statusCode = 200;
+      responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON));
+    } else {
+      responseJson.statusCode = 200;
+      const responseBody = {
+        "type": 4, 
+        "data": { 
+          "content": "Command `" + command + "` does not exist.  Request Id: `' + event.requestContext.requestId + '`"
+        }
+      };
+      responseJson.body = JSON.stringify(responseBody);
+    }
+  }
 
 };
 
-function loadCommands() {
-  const commandsPath = path.join(__dirname + '../commands');
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file != 'index.js');
-  let pendingCommands = {};
+function loadCommand(targetCommand) {
+  const commandsPath = path.join(__dirname + '/commands');
+  const commandFilename = targetCommand + ".js";
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file === commandFilename && file != 'index.js');
 
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+  if (commandFiles.length == 0) return {};
 
-    pendingCommands[command.discordSlashMetadata.name] = command;
+  const filePath = path.join(commandsPath, commandFilename);
+  console.log("Loading: " + filePath);
+  const command = require(filePath);
 
-    console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.type + ") " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.description);
-  }
+  console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + command.discordSlashMetadata.type + ") " + command.discordSlashMetadata.description);
 
-  return pendingCommands;
+  return command;
 }
