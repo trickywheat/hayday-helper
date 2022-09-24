@@ -4,6 +4,7 @@
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
+    "build": "rm -rf dist && esbuild ./src/requestHelpMessage.js --entry-names=[dir]/[name] --bundle --minify --sourcemap --platform=node --target=node16.14 --outdir=dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tricky Wheat",
@@ -15,5 +16,8 @@
     "dotenv": "^16.0.2",
     "node-fetch": "^3.2.10",
     "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.15.9"
   }
 }
