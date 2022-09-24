@@ -80,6 +80,7 @@ function loadCommands() {
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
+    console.log("Loading: " + filePath);
     const command = require(filePath);
 
     pendingCommands[command.discordSlashMetadata.name] = command;
