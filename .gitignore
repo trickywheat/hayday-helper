@@ -3,3 +3,4 @@ dist/
 .env
 function.zip
 src/*.json
+commands/requestHelpMessage.js
