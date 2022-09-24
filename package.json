@@ -4,7 +4,8 @@
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && esbuild ./src/requestHelpMessage.js --entry-names=[dir]/[name] --bundle --minify --sourcemap --platform=node --target=node16.14 --outdir=dist",
+    "build": "npm i esbuild --save-dev && rm -rf dist && esbuild ./src/requestHelpMessage.js --entry-names=[dir]/[name] --bundle --platform=node --target=node16.14 --outdir=dist",
+    "deploy": "rm -rf node_modules/ function.zip ; npm i --only=prod && zip -r function.zip ./* -x ./dist ./src && aws lambda update-function-code --function-name Discord-webhookIntake --zip-file fileb://function.zip && aws lambda update-function-code --function-name Discord-callback --zip-file fileb://function.zip",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tricky Wheat",

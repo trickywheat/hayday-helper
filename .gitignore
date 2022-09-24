@@ -2,3 +2,4 @@ node_modules/
 dist/
 .env
 function.zip
+src/*.json
