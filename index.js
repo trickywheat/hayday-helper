@@ -42,27 +42,24 @@ exports.handler = async (event) => {
         // Handle Pings
         responseJson.statusCode = 200;
         responseJson.body = '{"type": 1}';
-      } else {
-        botCommands = loadCommands();
-        console.log("Bot has these commands: " + JSON.stringify(botCommands));
+      } else if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
+        const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
+        console.log("Discord sent command: " + command);
+        const botCommand = loadCommand(command);
 
-        if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
-          const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
-          console.log("Discord sent command: " + command);
-          if (botCommands.hasOwnProperty(command)) {
-            console.log("Executing command module for " + command);
-            responseJson.statusCode = 200;
-            responseJson.body = JSON.stringify(await botCommands[command].execute(requestJSON, event.requestContext));
-          } else {
-            responseJson.statusCode = 200;
-            const responseBody = {
-              "type": 4, 
-              "data": { 
-                "content": "Command (' + command + ') does not exist.  Request Id: `' + event.requestContext.requestId + '`"
-              }
-            };
-            responseJson.body = JSON.stringify(responseBody);
-          }
+        if (botCommand.hasOwnProperty('discordSlashMetadata')) {
+          console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
+          responseJson.statusCode = 200;
+          responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event.requestContext));
+        } else {
+          responseJson.statusCode = 200;
+          const responseBody = {
+            "type": 4, 
+            "data": { 
+              "content": "Command `" + command + "` does not exist.  Request Id: `' + event.requestContext.requestId + '`"
+            }
+          };
+          responseJson.body = JSON.stringify(responseBody);
         }
       }
     }
@@ -73,20 +70,18 @@ exports.handler = async (event) => {
 };
 
 
-function loadCommands() {
+function loadCommand(targetCommand) {
   const commandsPath = path.join(__dirname + '/commands');
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file != 'index.js');
-  let pendingCommands = {};
+  const commandFilename = targetCommand + ".js";
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file === commandFilename && file != 'index.js');
 
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    console.log("Loading: " + filePath);
-    const command = require(filePath);
+  if (commandFiles.length == 0) return {};
 
-    pendingCommands[command.discordSlashMetadata.name] = command;
+  const filePath = path.join(commandsPath, commandFilename);
+  console.log("Loading: " + filePath);
+  const command = require(filePath);
 
-    console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.type + ") " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.description);
-  }
+  console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + command.discordSlashMetadata.type + ") " + command.discordSlashMetadata.description);
 
-  return pendingCommands;
+  return command;
 }

@@ -4,8 +4,9 @@
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
-    "build": "npm i esbuild --save-dev && rm -rf dist && esbuild ./src/*.js --entry-names=[dir]/[name] --bundle --platform=node --target=node16.14 --outdir=dist && cp dist/*.js commands/",
-    "deploy": "rm -rf node_modules/ function.zip ; npm i --only=prod && zip -r function.zip ./*",
+    "build": "npm i esbuild --save-dev && rm -rf dist && esbuild ./src/*.js --entry-names=[dir]/[name] --minify --bundle --platform=node --target=node16.14 --outdir=dist && cp dist/*.js commands/",
+    "fetch": "rm -rf node_modules/ ; npm i --only=prod",
+    "zip": "rm functions.zip ; zip -r function.zip ./*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tricky Wheat",
@@ -15,8 +16,7 @@
     "@aws-sdk/client-lambda": "^3.171.0",
     "discord-interactions": "^3.2.0",
     "dotenv": "^16.0.2",
-    "node-fetch": "^3.2.10",
-    "winston": "^3.8.2"
+    "node-fetch": "^3.2.10"
   },
   "devDependencies": {
     "esbuild": "^0.15.9"
