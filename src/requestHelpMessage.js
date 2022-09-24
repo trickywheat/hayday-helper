@@ -21,10 +21,13 @@ module.exports = {
       }
     };
 
+    let payloadJSON = requestJSON;
+    payloadJSON.callbackExecute = true;
+
     const commandInput = {
-      FunctionName: "Discord-callback",
+      FunctionName: "Discord-webhookIntake",
       InvocationType: "Event",
-      Payload: JSON.stringify(requestJSON)
+      Payload: JSON.stringify(payloadJSON)
     }
 
     // Set up LambdaClient

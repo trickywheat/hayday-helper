@@ -3,10 +3,10 @@ const discordInteractions = require('discord-interactions');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
 const path = require('node:path');
-let botCommands = {};
 
-exports.handler = async (event) => {
-  console.log(JSON.stringify(event));
+exports.handler = async (event, context) => {
+  console.log("webhookIntake - event: " + JSON.stringify(event));
+  console.log("webhookIntake - context: " + JSON.stringify(context));
 
   let responseJson = {
     statusCode: 418,
@@ -18,8 +18,15 @@ exports.handler = async (event) => {
 
   let isValidRequest = false;
 
-  if (event.headers.hasOwnProperty("authorization") && 
-     (event.headers['authorization'] === "Bearer " + process.env.POSTMAN_VERIFY)) {
+  // If running this with POSTMAN, check headers
+  if (event.hasOwnProperty('headers') && event.headers.hasOwnProperty('authorization') && 
+     (event.headers.authorization === "Bearer " + process.env.POSTMAN_VERIFY)) {
+    isValidRequest = true;
+  
+  // If has callback property, check that it was triggered by lambda
+  } else if (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true) &&
+      (context.invokedFunctionArn.endsWith(context.functionName))) {
+    console.log("callbackExecute: true");
     isValidRequest = true;
   } else {
     // Get valid information
@@ -34,29 +41,49 @@ exports.handler = async (event) => {
     responseJson.status = 401;
     responseJson.body = '{"message": "Bad request signature"}';
   } else {
-    if ((event.requestContext.http.method === "POST") && (event.body.length > 1)) {
-      const requestJSON = JSON.parse(event.body);
+    // It's a valid request.  Set status to 200 universally
+    responseJson.statusCode = 200;
 
-      console.log(JSON.stringify(requestJSON));
+    // Check to see if Discord sent this via POST webhook
+    // or if it is a callback
+    if (((event.requestContext.http.method === "POST") && (event.body.length > 1)) || 
+        (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))) {
+      let requestJSON = {};
+
+      if ((event.requestContext.http.method === "POST") && (event.body.length > 1)) 
+        requestJSON = JSON.parse(event.body);
+      else if (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))
+        requestJSON = event;
+
+      console.log("requestJson: " + JSON.stringify(requestJSON));
+
+
+      // Must be able to respond to a valid PING:
+      // https://discord.com/developers/docs/interactions/receiving-and-responding#receiving-an-interaction
       if (requestJSON.type == 1) {
-        // Handle Pings
-        responseJson.statusCode = 200;
         responseJson.body = '{"type": 1}';
+
+      // Check to see if a command is being requested
+      // is available as a module.
       } else if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
         const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
         console.log("Discord sent command: " + command);
-        const botCommand = loadCommand(command);
 
-        if (botCommand.hasOwnProperty('discordSlashMetadata')) {
+        // Attempt to load the command that was received.
+        // function loadCommand returns an empty object if no such command was found.
+        const botCommand = loadCommand(command);
+        if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.hasOwnProperty('callbackExecute') === false)) {
           console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
-          responseJson.statusCode = 200;
           responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event.requestContext));
+        } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.callbackExecute === true)) {
+          console.log("Executing callback module for " + botCommand.discordSlashMetadata.name);
+          responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event.requestContext));
         } else {
           responseJson.statusCode = 200;
           const responseBody = {
             "type": 4, 
             "data": { 
-              "content": "Command `" + command + "` does not exist.  Request Id: `' + event.requestContext.requestId + '`"
+              "content": "Command `" + command + "` does not exist.  Request Id: `" + event.requestContext.requestId + "`"
             }
           };
           responseJson.body = JSON.stringify(responseBody);
