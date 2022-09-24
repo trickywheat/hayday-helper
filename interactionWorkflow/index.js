@@ -3,10 +3,10 @@ const discordInteractions = require('discord-interactions');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
 const path = require('node:path');
-let botCommands = {};
 
-exports.handler = async (event) => {
-  console.log(JSON.stringify(event));
+exports.handler = async (event, context) => {
+  console.log("webhookIntake - event: " + JSON.stringify(event));
+  console.log("webhookIntake - context: " + JSON.stringify(context));
 
   let responseJson = {
     statusCode: 418,
@@ -18,8 +18,9 @@ exports.handler = async (event) => {
 
   let isValidRequest = false;
 
-  if (event.headers.hasOwnProperty("authorization") && 
-     (event.headers['authorization'] === "Bearer " + process.env.POSTMAN_VERIFY)) {
+  // If running this with POSTMAN, check headers
+  if (event.hasOwnProperty('headers') && event.headers.hasOwnProperty('authorization') && 
+     (event.headers.authorization === "Bearer " + process.env.POSTMAN_VERIFY)) {
     isValidRequest = true;
   } else {
     // Get valid information
@@ -34,35 +35,47 @@ exports.handler = async (event) => {
     responseJson.status = 401;
     responseJson.body = '{"message": "Bad request signature"}';
   } else {
-    if ((event.requestContext.http.method === "POST") && (event.body.length > 1)) {
+    // It's a valid request.  Set status to 200 universally
+    responseJson.statusCode = 200;
+
+    // Check to see if Discord sent this via POST webhook
+    // or if it is a callback
+    if (((event.requestContext.http.method === "POST") && (event.body.length > 1)) || 
+        (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))) {
       const requestJSON = JSON.parse(event.body);
+      console.log("requestJson: " + JSON.stringify(requestJSON));
 
-      console.log(JSON.stringify(requestJSON));
+      // Must be able to respond to a valid PING:
+      // https://discord.com/developers/docs/interactions/receiving-and-responding#receiving-an-interaction
       if (requestJSON.type == 1) {
-        // Handle Pings
-        responseJson.statusCode = 200;
         responseJson.body = '{"type": 1}';
-      } else {
-        botCommands = loadCommands();
-        console.log("Bot has these commands: " + JSON.stringify(botCommands));
 
-        if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
-          const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
-          console.log("Discord sent command: " + command);
-          if (botCommands.hasOwnProperty(command)) {
-            console.log("Executing command module for " + command);
-            responseJson.statusCode = 200;
-            responseJson.body = JSON.stringify(await botCommands[command].execute(requestJSON));
-          } else {
-            responseJson.statusCode = 200;
-            const responseBody = {
-              "type": 4, 
-              "data": { 
-                "content": "Command (' + command + ') does not exist.  Request Id: `' + event.requestContext.requestId + '`"
-              }
-            };
-            responseJson.body = JSON.stringify(responseBody);
-          }
+      // Check to see if a command is being requested
+      // is available as a module.
+      } else if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
+        const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
+        console.log("Discord sent command: " + command);
+
+        // Attempt to load the command that was received.
+        // function loadCommand returns an empty object if no such command was found.
+        const botCommand = loadCommand(command);
+        if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.hasOwnProperty('callbackExecute') === false)) {
+          console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
+          responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
+
+        } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.callbackExecute === true)) {
+          console.log("Executing callback module for " + botCommand.discordSlashMetadata.name);
+          responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
+
+        } else {
+          responseJson.statusCode = 200;
+          const responseBody = {
+            "type": 4, 
+            "data": { 
+              "content": "Command `" + command + "` does not exist.  Request Id: `" + event.requestContext.requestId + "`"
+            }
+          };
+          responseJson.body = JSON.stringify(responseBody);
         }
       }
     }
@@ -73,19 +86,18 @@ exports.handler = async (event) => {
 };
 
 
-function loadCommands() {
+function loadCommand(targetCommand) {
   const commandsPath = path.join(__dirname + '/commands');
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file != 'index.js');
-  let pendingCommands = {};
+  const commandFilename = targetCommand + ".js";
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file === commandFilename && file != 'index.js');
 
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+  if (commandFiles.length == 0) return {};
 
-    pendingCommands[command.discordSlashMetadata.name] = command;
+  const filePath = path.join(commandsPath, commandFilename);
+  console.log("Loading: " + filePath);
+  const command = require(filePath);
 
-    console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.type + ") " + pendingCommands[command.discordSlashMetadata.name].discordSlashMetadata.description);
-  }
+  console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + command.discordSlashMetadata.type + ") " + command.discordSlashMetadata.description);
 
-  return pendingCommands;
+  return command;
 }

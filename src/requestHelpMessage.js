@@ -2,7 +2,6 @@
   requestHelpMessage Command
   Type: CHAT_INPUT
 */
-
 require('dotenv').config({"path": "../.env" });
 const serverConfig = require('./serverConfig.json');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -14,35 +13,73 @@ module.exports = {
     "description": "Processes Request Help Message modal",
   },
 
-  async execute(requestJSON) {
-    const responseJson = {
-      "type": 6
+  async execute(requestJSON, lambdaEvent, lambdaContext) {
+    let responseJson = {
+      "type": 5,
+      "data": {
+        "flags": 1 << 6
+      }
     };
 
+    // Build Lambda Payload
+    const payloadJSON = {
+      "callbackExecute": true,
+      "headers": lambdaEvent.headers,
+      "body": lambdaEvent.body
+    }
+
+    const commandInput = {
+      FunctionName: lambdaContext.invokedFunctionArn,
+      InvocationType: "Event",
+      Payload: JSON.stringify(payloadJSON)
+    }
+
+    // Set up LambdaClient
+    const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+    const client = new LambdaClient({ region: "us-east-1" });
+
+    const command = new InvokeCommand(commandInput);
+    try {
+      const lambdaResponse = await client.send(command);
+      console.log("Response from Lambda: " + JSON.stringify(lambdaResponse));
+
+      if (lambdaResponse.StatusCode != 202) {
+        responseJson.type = 4;
+        responseJson.data.content = `There was an issue executing \`${commandInput.FunctionName}\`.  requestId=\`${lambdaContext.awsRequestId}\``;
+      }
+    } catch (error) {
+      responseJson.type = 4;
+      responseJson.data.content = `There was an issue with \`webhookIntake\`.  requestId=\`${lambdaContext.awsRequestId}\``;
+    }
+
+    // responseJson.body = JSON.stringify(responseBody);
+    return responseJson;
+  },
+
+  async callbackExecute(requestJSON) {
     const requestType = requestJSON.data.components[0].components[0].custom_id.split("_")[1];
     const requestHelpMessage = requestJSON.data.components[0].components[0].value;
     const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
-
+  
     // Let's try to find the Label from requestType
-    const requestHelpMenu = require("./requestHelpMenu.js");
+    const requestHelpMenu = require("../commands/requestHelpMenu.js");
     const requestHelpChoiceLabel = requestHelpMenu.discordSlashMetadata.options[0].choices.find(element => element.value === requestType).label;
-
+  
     // Build embed for the request channel
     const postEmbedRequestJSON = await sendRequestEmbed(requestJSON, guildMember, requestHelpChoiceLabel, requestHelpMessage); 
-
+  
     // Create Thread
     const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
-
+  
     // Invite Guild Member
     const inviteGuildMemberToThreadJSON = await inviteGuildMemberToThread(createThreadRequestJSON, requestJSON.member);
-
+  
     // Send Inital Thread message
     const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, guildMember);
-
+  
     return responseJson;
   }
 };
-
 
 // TO DO: fix this for production
 async function sendRequestEmbed(requestJSON, guildMember, label, placeholder) {
