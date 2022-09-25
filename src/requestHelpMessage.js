@@ -56,12 +56,23 @@ module.exports = {
     return responseJson;
   },
 
+  // Since this is executed by Lambda, a Discord-type response is not needed, 
+  // but let's follow the convention
   async callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
     console.log("requestHelpMessage - callbackExecute");
+    let responseJson = {
+      "type": 4,
+      "data": {
+        "content": "Lambda callback executed.  requestId `" + lambdaEvent.awsRequestId + "`",
+        "flags": 1 << 6  // Ephemeral message -- viewable by invoker only
+      }
+    };
 
     const requestType = requestJSON.data.components[0].components[0].custom_id.split("_")[1];
     const requestHelpMessage = requestJSON.data.components[0].components[0].value;
     const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
+    const application_id = requestJSON.application_id;
+    const requestToken = requestJSON.token;
   
     // Let's try to find the Label from requestType
     const requestHelpMenu = require("../commands/requestHelpMenu.js");
@@ -78,6 +89,15 @@ module.exports = {
   
     // Send Inital Thread message
     const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, guildMember);
+
+    // Send updated message that everything is fine
+    const url = `https://discord.com/api/v10/webhooks/${application_id}/${requestToken}`;
+    const payloadBody = {
+      "content": "Request processed successfully!  You may dismiss this message at anytime."
+    }
+
+    console.log("Giving the official 200 OK to the temporary message sent when modal was submitted...");
+    const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
   
     return responseJson;
   }
@@ -151,35 +171,45 @@ async function sendInitialThreadMessage(createThreadRequestJSON, guildMember) {
 async function inviteGuildMemberToThread(createThreadRequestJSON, guildMember) {
   const url = `https://discord.com/api/v10/channels/${createThreadRequestJSON.id}/thread-members/${guildMember.user.id}`;
 
-  // Cannot use function since this is a PUT
-  const payloadJSON = {
-    "method": 'put',
-    "headers": {
-      "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`
-    }
-  };
-
-  console.log("Sending payload: " + JSON.stringify(payloadJSON));
-  const payloadResponse = await fetch(url, payloadJSON);
-  console.log("payload reply: " + JSON.stringify(payloadResponse));  // should return status 204
+  console.log("Inviting GuildMember to Thread...");
+  const payloadResponse = await sendPayloadToDiscord(url, {}, 'put');
+  return payloadResponse;  // should return status 204
 }
 
 
 
-async function sendPayloadToDiscord(url, body) {
-  const payloadJSON = {
-    "method": 'post',
+async function sendPayloadToDiscord(url, body, method = 'post') {
+  let payloadJSON = {
+    "method": method,
     "headers": {
-      "Authorization": `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    "body": JSON.stringify(body)
+      "Accept": '*/*'
+    }
   };
 
-  console.log("Sending payload: " + JSON.stringify(payloadJSON));
+  if (Object.keys(body).length > 0) {
+    payloadJSON.body = JSON.stringify(body);
+    payloadJSON.headers['Content-Type'] = 'application/json';
+  }
+
+  // Webhook URLs have the discord bot app ID.
+  if (url.indexOf(process.env.DISCORD_BOT_APP_ID) == -1)
+    payloadJSON.headers['Authorization'] = `Bot ${process.env.DISCORD_BOT_TOKEN}`;
+
+  console.log("Sending to url: " + method + " " + url);
+  console.log("Sending payload to Discord: " + JSON.stringify(payloadJSON));
   const payloadResponse = await fetch(url, payloadJSON);
-  const payloadResponseJSON = await payloadResponse.json();
-  console.log("payload reply: " + JSON.stringify(payloadResponseJSON));
+  console.log("Payload Response: " + JSON.stringify(payloadResponse.headers.get('content-type')));
+
+  let payloadResponseJSON = {};
+  if (payloadResponse.headers.get('content-type') === 'application/json') {
+    payloadResponseJSON = await payloadResponse.json()
+  } else {
+    payloadResponseJSON = {
+      "status": payloadResponse.status, 
+      "statusText": payloadResponse.statusText
+    };
+  }
+  console.log("Discord reply: " + JSON.stringify(payloadResponseJSON));
 
   return payloadResponseJSON;
 }
