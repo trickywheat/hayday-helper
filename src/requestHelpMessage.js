@@ -23,7 +23,7 @@ module.exports = {
 
     // Build Lambda Payload
     const payloadJSON = {
-      "callbackExecute": true,
+      "callbackExecute": lambdaEvent.callbackExecute + 1 || 1,
       "headers": lambdaEvent.headers,
       "body": lambdaEvent.body
     }
@@ -56,7 +56,9 @@ module.exports = {
     return responseJson;
   },
 
-  async callbackExecute(requestJSON) {
+  async callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
+    console.log("requestHelpMessage - callbackExecute");
+
     const requestType = requestJSON.data.components[0].components[0].custom_id.split("_")[1];
     const requestHelpMessage = requestJSON.data.components[0].components[0].value;
     const guildMember = requestJSON.member.nick || requestJSON.member.user.username;

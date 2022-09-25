@@ -40,8 +40,9 @@ exports.handler = async (event, context) => {
 
     // Check to see if Discord sent this via POST webhook
     // or if it is a callback
-    if (((event.requestContext.http.method === "POST") && (event.body.length > 1)) || 
-        (event.hasOwnProperty('callbackExecute') && (event.callbackExecute === true))) {
+    if (((event.hasOwnProperty('requestContext') && (event.requestContext.hasOwnProperty('http')) && 
+          ((event.requestContext.http.method === "POST") && (event.body.length > 1)))) || 
+        (event.hasOwnProperty('callbackExecute'))) {
       const requestJSON = JSON.parse(event.body);
       console.log("requestJson: " + JSON.stringify(requestJSON));
 
@@ -59,20 +60,29 @@ exports.handler = async (event, context) => {
         // Attempt to load the command that was received.
         // function loadCommand returns an empty object if no such command was found.
         const botCommand = loadCommand(command);
-        if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.hasOwnProperty('callbackExecute') === false)) {
+        if (botCommand.hasOwnProperty('discordSlashMetadata') && (event.hasOwnProperty('callbackExecute') === false)) {
           console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
 
-        } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (requestJSON.callbackExecute === true)) {
+        } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (event.callbackExecute <= 3)) {
           console.log("Executing callback module for " + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
 
-        } else {
-          responseJson.statusCode = 200;
+        } else if (event.callbackExecute <= 3) {
           const responseBody = {
             "type": 4, 
             "data": { 
-              "content": "Command `" + command + "` does not exist.  Request Id: `" + event.requestContext.requestId + "`"
+              "content": "Unable to execute `" + command + "` due to invocation limit.  Request Id: `" + event.requestContext.requestId + "`",
+              "flags": 1 << 6  // Ephemeral message -- viewable by invoker only
+            }
+          }
+          responseJson.body = JSON.stringify(responseBody);        
+        } else {
+          const responseBody = {
+            "type": 4, 
+            "data": { 
+              "content": "Command `" + command + "` does not exist.  Request Id: `" + event.requestContext.requestId + "`",
+              "flags": 1 << 6  // Ephemeral message -- viewable by invoker only
             }
           };
           responseJson.body = JSON.stringify(responseBody);
