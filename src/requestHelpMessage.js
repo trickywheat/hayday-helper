@@ -71,7 +71,7 @@ module.exports = {
     const requestType = requestJSON.data.components[0].components[0].custom_id.split("_")[1];
     const requestHelpMessage = requestJSON.data.components[0].components[0].value;
     const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
-    const application_id = requestJSON.application_id;
+    const applicationId = requestJSON.application_id;
     const requestToken = requestJSON.token;
   
     // Let's try to find the Label from requestType
@@ -91,13 +91,7 @@ module.exports = {
     const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, guildMember);
 
     // Send updated message that everything is fine
-    const url = `https://discord.com/api/v10/webhooks/${application_id}/${requestToken}`;
-    const payloadBody = {
-      "content": "Request processed successfully!  You may dismiss this message at anytime."
-    }
-
-    console.log("Giving the official 200 OK to the temporary message sent when modal was submitted...");
-    const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
+    const finalMessageJSON = await sendFinalMessage(applicationId, requestToken, initialThreadMessageJSON.channel_id);
   
     return responseJson;
   }
@@ -176,6 +170,15 @@ async function inviteGuildMemberToThread(createThreadRequestJSON, guildMember) {
   return payloadResponse;  // should return status 204
 }
 
+async function sendFinalMessage(applicationId, requestToken, channelId) {
+  const url = `https://discord.com/api/v10/webhooks/${applicationId}/${requestToken}`;
+  const payloadBody = {
+    "content": `Your request thread has been created: <\#${channelId}>  You may dismiss this message at anytime.`
+  }
+
+  console.log("Giving the official 200 OK to the temporary message sent when modal was submitted...");
+  const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
+}
 
 
 async function sendPayloadToDiscord(url, body, method = 'post') {
