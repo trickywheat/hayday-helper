@@ -38,6 +38,7 @@ module.exports = {
     const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
     const client = new LambdaClient({ region: "us-east-1" });
 
+    console.log('Invoking lambda: ' + commandInput.FunctionName);
     const command = new InvokeCommand(commandInput);
     try {
       const lambdaResponse = await client.send(command);
@@ -49,7 +50,7 @@ module.exports = {
       }
     } catch (error) {
       responseJson.type = 4;
-      responseJson.data.content = `There was an issue with \`webhookIntake\`.  requestId=\`${lambdaContext.awsRequestId}\``;
+      responseJson.data.content = `There was an error with \`requestHelpMessage\`.  requestId=\`${lambdaContext.awsRequestId}\`\n${JSON.stringify(error)}`;
     }
 
     // responseJson.body = JSON.stringify(responseBody);
