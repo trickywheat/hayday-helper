@@ -43,7 +43,7 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::123456789100:role/my-github-actions-role
           role-session-name: GithubActionsSession
-          role-duration-seconds: 60
+          role-duration-seconds: 900
       
       - name: Attempt to Create Lambda
         run: |
