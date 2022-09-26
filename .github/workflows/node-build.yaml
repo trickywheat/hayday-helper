@@ -54,9 +54,9 @@ jobs:
             --handler index.handler \
             --zip-file fileb://function.zip
         env:
-          FUNCTION_NAME: ${{ secrets:LAMBDA_FUNCTION_NAME }}
+          FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
           RUNTIME: nodejs${{ matrix.node-version }}.x
-          LAMBDA_EXECUTION_ROLE: ${{ secrets:LAMBDA_EXECUTION_ROLE_ARN }}
+          LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       
       - name: Update Lambda if Create Fails
         if: ${{ failure() }}
