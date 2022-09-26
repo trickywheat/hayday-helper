@@ -50,7 +50,7 @@ jobs:
           aws lambda create-function \
             --function-name ${FUNCTION_NAME} \
             --runtime ${RUNTIME} \
-            --role ${{ LAMBDA_EXECUTION_ROLE }} \
+            --role ${LAMBDA_EXECUTION_ROLE} \
             --handler index.handler \
             --zip-file fileb://function.zip
         env:
