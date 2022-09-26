@@ -1,0 +1,67 @@
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  npm-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+
+    permissions:
+      id-token: write
+      contents: read
+
+    name: Node ${{ matrix.node-version }} build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Run npm install
+        run: npm i --only=prod
+
+      - name: zip up the folder
+        run: zip -r function.zip ./
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789100:role/my-github-actions-role
+          role-session-name: GithubActionsSession
+          role-duration-seconds: 60
+      
+      - name: Attempt to Create Lambda
+        run: |
+          aws lambda create-function \
+            --function-name ${FUNCTION_NAME} \
+            --runtime ${RUNTIME} \
+            --role ${{ LAMBDA_EXECUTION_ROLE }} \
+            --handler index.handler \
+            --zip-file fileb://function.zip
+        env:
+          FUNCTION_NAME: ${{ secrets:LAMBDA_FUNCTION_NAME }}
+          RUNTIME: nodejs${{ matrix.node-version }}.x
+          LAMBDA_EXECUTION_ROLE: ${{ secrets:LAMBDA_EXECUTION_ROLE_ARN }}
+      
+      - name: Update Lambda if Create Fails
+        if: ${{ failure() }}
+        run: |
+          aws lambda create-function \
+            --function-name ${FUNCTION_NAME} \
+            --zip-file fileb://function.zip
+
