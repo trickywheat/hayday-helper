@@ -17,6 +17,8 @@ jobs:
       matrix:
         node-version: [16]
 
+    environment: development
+
     permissions:
       id-token: write
       contents: read
@@ -45,6 +47,7 @@ jobs:
           role-duration-seconds: 900
       
       - name: Attempt to Create Lambda
+        id: createLambda
         run: |
           aws lambda create-function \
             --function-name ${FUNCTION_NAME} \
@@ -58,9 +61,10 @@ jobs:
           LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       
       - name: Update Lambda if Create Fails
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.createLambda.conclusion == 'failure' }}
         run: |
           aws lambda create-function \
             --function-name ${FUNCTION_NAME} \
             --zip-file fileb://function.zip
-
+        env:
+          FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
