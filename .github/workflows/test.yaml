@@ -19,7 +19,6 @@ jobs:
     
     env:
       FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-      LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ GITHUB_SHA }},POSTMAN_VERIFY=${{GITHUB_SHA}},SHA=${{GITHUB_SHA}}
 
     name: What is the variable
