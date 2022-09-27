@@ -130,6 +130,6 @@ jobs:
         run: |
           aws lambda update-function-configuration \
             --function-name ${FUNCTION_NAME} \
-            --environment Variables=${LAMBDA_ENV_VARS}
+            --environment Variables={${LAMBDA_ENV_VARS}}
         env:
           LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }},SHA=${{ github.sha }}
