@@ -19,9 +19,12 @@ jobs:
     
     env:
       FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-      LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }},SHA=${{ GITHUB_SHA }}
+      LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }},SHA=SOME_SHA
 
     name: What is the variable
     steps:
       - name: echo LAMBDA_ENV_VARS
         run: echo ${LAMBDA_ENV_VARS}
+
+      - name: echo GITHUB_SHA
+        run: echo ${GITHUB_SHA}
