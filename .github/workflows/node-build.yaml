@@ -54,16 +54,29 @@ jobs:
             --runtime ${RUNTIME} \
             --role ${LAMBDA_EXECUTION_ROLE} \
             --handler index.handler \
+            --timeout 10 \
+            --memory-size 256 \
+            --architectures arm64 \
             --zip-file fileb://function.zip
         env:
           FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
           RUNTIME: nodejs${{ matrix.node-version }}.x
           LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       
+      - name: Create Function URL if Create is successful
+        if: ${{ success() && steps.createLambda.conclusion == 'success' }}
+        run: |
+          aws create-function-url-config \
+          --function-name ${FUNCTION_NAME} \
+          --auth-type NONE
+
+        env:
+          FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+
       - name: Update Lambda if Create Fails
         if: ${{ failure() && steps.createLambda.conclusion == 'failure' }}
         run: |
-          aws lambda create-function \
+          aws lambda update-function-code \
             --function-name ${FUNCTION_NAME} \
             --zip-file fileb://function.zip
         env:
