@@ -19,10 +19,10 @@ jobs:
       FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
       LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       LAMBDA_ENV_VARS: |
-        ${{ join(["DISCORD_BOT_PUBLIC_KEY=join1",
+        ${{ join(fromJSON('["DISCORD_BOT_PUBLIC_KEY=join1",
               "DISCORD_BOT_TOKEN=join2",
               "POSTMAN_VERIFY=join3",
-              "VERSION=SOME_VERSION+SHA"]) }}
+              "VERSION=SOME_VERSION+SHA"]')) }}
 
     name: Node ${{ matrix.node-version }} build
     steps:
