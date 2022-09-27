@@ -1,3 +1,4 @@
+name: Node Build and Deploy
 on:
   push:
     branches-ignore:
@@ -77,10 +78,10 @@ jobs:
       FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
       LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       LAMBDA_ENV_VARS: |
-        ${{ join(["DISCORD_BOT_PUBLIC_KEY="${{ secrets.DISCORD_BOT_PUBLIC_KEY }},
+        ${{ join(fromJSON('["DISCORD_BOT_PUBLIC_KEY="${{ secrets.DISCORD_BOT_PUBLIC_KEY }},
               "DISCORD_BOT_TOKEN="${{ secrets.DISCORD_BOT_TOKEN }},
               "POSTMAN_VERIFY="${{ secrets.POSTMAN_VERIFY }},
-              "VERSION=SOME_VERSION+SHA"]) }}
+              "SHA=${{GITHUB_SHA}}"]')) }}
 
     permissions:
       id-token: write
