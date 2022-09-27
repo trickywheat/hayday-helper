@@ -125,6 +125,11 @@ jobs:
           aws lambda update-function-code \
             --function-name ${FUNCTION_NAME} \
             --zip-file fileb://function.zip
+      
+      - name: Get Lambda Status
+        run: |
+          aws lambda get-function-configuration \
+            --function-name ${FUNCTION_NAME}
 
       - name: Update Lambda Environment Variables
         run: |
