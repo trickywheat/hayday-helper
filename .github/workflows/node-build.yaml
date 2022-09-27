@@ -85,7 +85,7 @@ jobs:
           LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
       
       - name: Create Function URL if Create is successful
-        if: ${{ success() && steps.createLambda.conclusion == 'success' }}
+        if: ${{ steps.createLambda.outcome == 'success' }}
         run: |
           aws lambda create-function-url-config \
           --function-name ${FUNCTION_NAME} \
@@ -95,7 +95,7 @@ jobs:
           FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
 
       - name: Update Lambda if Create Fails
-        if: ${{ failure() && steps.createLambda.conclusion == 'failure' }}
+        if: ${{ steps.createLambda.outcome == 'failure' }}
         run: |
           aws lambda update-function-code \
             --function-name ${FUNCTION_NAME} \
