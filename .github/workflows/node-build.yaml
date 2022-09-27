@@ -70,7 +70,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
-        environment: [development, production]
+        environment: [development]
 
     environment: ${{ matrix.environment }}
 
