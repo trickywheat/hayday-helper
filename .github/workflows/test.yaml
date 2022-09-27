@@ -24,7 +24,7 @@ jobs:
               "POSTMAN_VERIFY=join3",
               "VERSION=SOME_VERSION+SHA"]')) }}
 
-    name: Node ${{ matrix.node-version }} build
+    name: What is the variable
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: echo LAMBDA_ENV_VARS
+        run: echo ${LAMBDA_ENV_VARS}
