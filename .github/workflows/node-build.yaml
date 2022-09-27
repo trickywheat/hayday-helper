@@ -71,6 +71,8 @@ jobs:
         node-version: [16]
         environment: [development, production]
 
+    environment: ${{ matrix.environment }}
+
     env:
       FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
       LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
