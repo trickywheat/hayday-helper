@@ -1,0 +1,30 @@
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  npm-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+  
+    env:
+      FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+      LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
+      LAMBDA_ENV_VARS: |
+        ${{ join(["DISCORD_BOT_PUBLIC_KEY=join1",
+              "DISCORD_BOT_TOKEN=join2",
+              "POSTMAN_VERIFY=join3",
+              "VERSION=SOME_VERSION+SHA"]) }}
+
+    name: Node ${{ matrix.node-version }} build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
