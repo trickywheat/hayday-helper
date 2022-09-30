@@ -77,13 +77,13 @@ module.exports = {
   
     // Let's try to find the Label from requestType
     const requestHelpMenu = require("../commands/requestHelpMenu.js");
-    const requestHelpChoiceLabel = requestHelpMenu.discordSlashMetadata.options[0].choices.find(element => element.value === requestType).label;
+    const requestHelpChoice = requestHelpMenu.discordSlashMetadata.options[0].choices.find(element => element.value === requestType);
   
     // Build embed for the request channel
-    const postEmbedRequestJSON = await sendRequestEmbed(requestJSON, guildMember, requestHelpChoiceLabel, requestHelpMessage); 
+    const postEmbedRequestJSON = await sendRequestEmbed(requestJSON, guildMember, requestHelpChoice, requestHelpMessage); 
   
     // Create Thread
-    const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel);
+    const createThreadRequestJSON = await createThread(postEmbedRequestJSON, guildMember, requestHelpChoice);
   
     // Invite Guild Member
     const inviteGuildMemberToThreadJSON = await inviteGuildMemberToThread(createThreadRequestJSON, requestJSON.member);
@@ -99,13 +99,13 @@ module.exports = {
 };
 
 // TO DO: fix this for production
-async function sendRequestEmbed(requestJSON, guildMember, label, placeholder) {
-  const targetChannel = serverConfig[requestJSON.guild_id].requestChannels.all;  // TODO: Fix this for Production
+async function sendRequestEmbed(requestJSON, guildMember, requestHelpChoice, placeholder) {
+  const targetChannel = serverConfig[requestJSON.guild_id].requestChannels[requestHelpChoice.value] || serverConfig[requestJSON.guild_id].requestChannels.all;  // If the specific choice channel is specified, then use that channel.  If not, use all.
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
   let messageComponents = {
     "embeds": [
       {
-        "title": `Request: ${label}`,
+        "title": `Request: ${requestHelpChoice.label}`,
         "description": `${placeholder}`,
         "color": 0x00FFFF,
         "footer": {
@@ -123,10 +123,10 @@ async function sendRequestEmbed(requestJSON, guildMember, label, placeholder) {
 }
 
 
-async function createThread(postEmbedRequestJSON, guildMember, requestHelpChoiceLabel) {
+async function createThread(postEmbedRequestJSON, guildMember, requestHelpChoice) {
   const url = `https://discord.com/api/v10/channels/${postEmbedRequestJSON.channel_id}/messages/${postEmbedRequestJSON.id}/threads`;
   const threadDetails = {
-    "name": `${guildMember} request - ` + requestHelpChoiceLabel,
+    "name": `${guildMember} request - ` + requestHelpChoice.label,
   };
 
   console.log("Sending thread request...");
