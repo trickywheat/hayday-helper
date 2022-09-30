@@ -107,9 +107,9 @@ async function sendRequestEmbed(requestJSON, guildMember, requestHelpChoice, pla
       {
         "title": `Request: ${requestHelpChoice.label}`,
         "description": `${placeholder}`,
-        "color": 0x00FFFF,
+        "color": 0x00f721,
         "footer": {
-          "text": `${guildMember}`
+          "text": `Requested by ${guildMember}`
         }
       }
     ]
