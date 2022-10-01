@@ -79,19 +79,7 @@ module.exports = {
     const messageContentsJSON = await getRequestMessageContents(threadChannelId);
     
     // Send edited message
-    let messageEmbed = messageContentsJSON.embeds;
-
-    messageEmbed[0].title += " -- FULFILLED!";
-    messageEmbed[0].color = 0xb73939;
-    messageEmbed[0].footer.text += " -- Thread closed by " + guildMember;
-
-    const url = `https://discord.com/api/v10/channels/${messageContentsJSON.channel_id}/messages/${threadChannelId}`;
-
-    const payloadJSON = {
-      "embeds": messageEmbed
-    }
-    
-    const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
+    const editMessageResponseJSON = await editInitialMessageEmbed(messageContentsJSON, guildMember);
 
     // Delete Thread
     const deleteThreadJSON = await deleteThread(threadChannelId);
@@ -99,17 +87,38 @@ module.exports = {
   }
 };
 
+
+async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
+  let messageEmbed = messageContentsJSON.embeds;
+
+  messageEmbed[0].title += " -- FULFILLED!";
+  messageEmbed[0].color = 0xb73939;
+  messageEmbed[0].footer.text += " -- Thread closed by " + guildMember;
+
+  const url = `https://discord.com/api/v10/channels/${messageContentsJSON.channel_id}/messages/${messageContentsJSON.id}`;
+
+  const payloadJSON = {
+    "embeds": messageEmbed
+  }
+  
+  console.log("Send edited initial embeded message...");
+  const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
+  return editMessageResponseJSON;
+}
+
+
 async function getRequestMessageContents(channelId) {
-    // Get thread info
-    let url = `https://discord.com/api/v10/channels/${channelId}`;
-    const threadChannelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
-    console.log("Thread's Parent: " + threadChannelInfoJSON.parent_id);
+  // Get thread info
+  let url = `https://discord.com/api/v10/channels/${channelId}`;
+  console.log("Getting channel information for threadId: " + channelId);
+  const threadChannelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
+  console.log("Thread's Parent: " + threadChannelInfoJSON.parent_id);
 
-    url = `https://discord.com/api/v10/channels/${threadChannelInfoJSON.parent_id}/messages/${channelId}`;
+  url = `https://discord.com/api/v10/channels/${threadChannelInfoJSON.parent_id}/messages/${channelId}`;
+  console.log("Getting message contents for initial embed...")
+  const messageContentsJSON = await sendPayloadToDiscord(url, {}, 'get');
 
-    const messageContentsJSON = await sendPayloadToDiscord(url, {}, 'get');
-
-    return messageContentsJSON;
+  return messageContentsJSON;
 }
 
 
