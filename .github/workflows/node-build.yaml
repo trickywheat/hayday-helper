@@ -52,7 +52,7 @@ jobs:
         run: npm i --only=prod
 
       - name: zip up the folder
-        run: zip -r function.zip ./
+        run: npm run build
 
       - name: Upload Zip File for Downstream Use
         uses: actions/upload-artifact@v3
@@ -96,37 +96,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 900
       
-      - name: Attempt to Create Lambda
+      - name: Create or Update Lambda
         id: createLambda
         continue-on-error: true
-        run: |
-          aws lambda create-function \
-            --function-name ${FUNCTION_NAME} \
-            --runtime ${RUNTIME} \
-            --role ${LAMBDA_EXECUTION_ROLE} \
-            --handler index.handler \
-            --timeout 10 \
-            --memory-size 256 \
-            --architectures arm64 \
-            --zip-file fileb://function.zip
+        run: bash .ci/deploy-lambda.bash
         env:
-          RUNTIME: nodejs${{ matrix.node-version }}.x
-      
-      - name: Create Function URL if Create is successful
-        if: ${{ steps.createLambda.outcome == 'success' }}
-        run: |
-          aws lambda create-function-url-config \
-          --function-name ${FUNCTION_NAME} \
-          --auth-type NONE \
-          --cors AllowHeaders=
-
-
-      - name: Update Lambda if Create Fails
-        if: ${{ steps.createLambda.outcome == 'failure' }}
-        run: |
-          aws lambda update-function-code \
-            --function-name ${FUNCTION_NAME} \
-            --zip-file fileb://function.zip
+          LAMBDA_RUNTIME: nodejs${{ matrix.node-version }}.x
       
       - name: Get Lambda Status
         run: |
