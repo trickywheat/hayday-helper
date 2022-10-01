@@ -98,7 +98,6 @@ module.exports = {
   }
 };
 
-// TO DO: fix this for production
 async function sendRequestEmbed(requestJSON, guildMember, requestHelpChoice, placeholder) {
   const targetChannel = serverConfig[requestJSON.guild_id].requestChannels[requestHelpChoice.value] || serverConfig[requestJSON.guild_id].requestChannels.all;  // If the specific choice channel is specified, then use that channel.  If not, use all.
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;

@@ -71,11 +71,46 @@ module.exports = {
       }
     };
 
+    const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
     const threadChannelId = requestJSON.channel_id;
+
+
+    // Get message contents
+    const messageContentsJSON = await getRequestMessageContents(threadChannelId);
+    
+    // Send edited message
+    let messageEmbed = messageContentsJSON.embeds;
+
+    messageEmbed[0].title += " -- FULFILLED!";
+    messageEmbed[0].color = 0xb73939;
+    messageEmbed[0].footer.text += " -- Thread closed by " + guildMember;
+
+    const url = `https://discord.com/api/v10/channels/${messageContentsJSON.channel_id}/messages/${threadChannelId}`;
+
+    const payloadJSON = {
+      "embeds": messageEmbed
+    }
+    
+    const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
+
+    // Delete Thread
     const deleteThreadJSON = await deleteThread(threadChannelId);
     return responseJson;
   }
 };
+
+async function getRequestMessageContents(channelId) {
+    // Get thread info
+    let url = `https://discord.com/api/v10/channels/${channelId}`;
+    const threadChannelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
+    console.log("Thread's Parent: " + threadChannelInfoJSON.parent_id);
+
+    url = `https://discord.com/api/v10/channels/${threadChannelInfoJSON.parent_id}/messages/${channelId}`;
+
+    const messageContentsJSON = await sendPayloadToDiscord(url, {}, 'get');
+
+    return messageContentsJSON;
+}
 
 
 async function deleteThread(channelId) {
