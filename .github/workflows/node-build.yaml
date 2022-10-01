@@ -84,6 +84,9 @@ jobs:
 
     name: Deploy to AWS - ${{ matrix.environment }} - nodejs ${{ matrix.node-version }} 
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
       - name: Download a single artifact
         uses: actions/download-artifact@v3
         with:
