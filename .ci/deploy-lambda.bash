@@ -65,7 +65,11 @@ if [[ $1 == 'create' ]]; then
 elif [[ $1 == 'update' ]]; then
   updateFunction
 else
-  if [[ ! createFunction && createFunctionUrl ]]; then
+  echo "Attempting to create the function..."
+  createFunction && createFunctionUrl
+
+  if [[ $? != 0 ]]; then
+    echo "Create failed, attempting to update function..."
     updateFunction
   fi
 fi

@@ -102,9 +102,7 @@ jobs:
       - name: Create or Update Lambda
         id: createLambda
         continue-on-error: true
-        run: |
-          ls -lRa 
-          bash .ci/deploy-lambda.bash
+        run: bash .ci/deploy-lambda.bash
         env:
           LAMBDA_RUNTIME: nodejs${{ matrix.node-version }}.x
       
