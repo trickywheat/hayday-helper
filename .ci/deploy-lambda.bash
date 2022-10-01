@@ -75,7 +75,8 @@ function createFunctionUrl {
   aws lambda add-permission \
     --function-name ${LAMBDA_FUNCTION_NAME} \
     --statement-id "FunctionURLAllowPublicAccess" \
-    --action "lambda:InvokeFunction" \
+    --action "lambda:InvokeFunctionUrl" \
+    --function-url-auth-type "NONE" \
     --principal "*"
 
   echo "Requesting a Function Url"
