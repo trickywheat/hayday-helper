@@ -1,4 +1,4 @@
-#!/bin/bash -ev
+#!/bin/bash -evx
 
 ##### ENVIRONMENT FILES #####
 envFiles=(".ci/lambda.env" ".ci/.env" ".env")
@@ -66,6 +66,7 @@ function updateFunction {
   
   aws lambda update-function-code \
     --function-name ${LAMBDA_FUNCTION_NAME} \
+    --architectures ${LAMBDA_ARCHITECTURE} \
     --zip-file fileb://function.zip
 }
 
@@ -81,6 +82,11 @@ function updateFunctionMetadata {
   if [[ -z $LAMBDA_ENV_VARS ]] && [[ -f .env ]]; then 
     echo "Parsing function .env file..."
     LAMBDA_ENV_VARS=$(sed -z 's/\n/,/g' .env)
+
+    echo "Adding git SHA"
+    GIT_SHA=$(git rev-parse HEAD)
+    LAMBDA_ENV_VARS=${LAMBDA_ENV_VARS},SHA=${GIT_SHA}
+
     echo $LAMBDA_ENV_VARS
   fi
 
@@ -91,7 +97,6 @@ function updateFunctionMetadata {
     --role ${LAMBDA_EXECUTION_ROLE} \
     --timeout ${LAMBDA_TIMEOUT} \
     --memory-size ${LAMBDA_MEMORY_SIZE} \
-    --architectures ${LAMBDA_ARCHITECTURE} \
     --environment Variables={${LAMBDA_ENV_VARS}}
 }
 
