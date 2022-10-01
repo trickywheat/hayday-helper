@@ -71,6 +71,13 @@ function updateFunction {
 }
 
 function createFunctionUrl {
+  echo "Adding resource permissions to enable Function URL"
+  aws lambda add-permission \
+    --function-name ${LAMBDA_FUNCTION_NAME} \
+    --statement-id "FunctionURLAllowPublicAccess" \
+    --action "lambda:InvokeFunction" \
+    --principle "*"
+
   echo "Requesting a Function Url"
 
   aws lambda create-function-url-config \
