@@ -65,7 +65,7 @@ jobs:
 # ----------------------------- #
 
   aws-deploy-dev:
-    if: startsWith(github.ref_name, "dev-")
+    if: startsWith(github.ref_name, 'dev-')
     needs: npm-build
     runs-on: ubuntu-latest
     strategy:
@@ -118,7 +118,7 @@ jobs:
 
 
   aws-deploy-ua-prod:
-    if: startsWith(github.ref_name, "qa-") || (github.ref_name == "main")
+    if: startsWith(github.ref_name, 'qa-') || (github.ref_name == 'main')
     needs: npm-build
     runs-on: ubuntu-latest
     strategy:
