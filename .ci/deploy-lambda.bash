@@ -79,11 +79,11 @@ function createFunctionUrl {
     --function-url-auth-type "NONE" \
     --principal "*"
 
-  echo "Requesting a Function Url"
+  # echo "Requesting a Function Url"
 
-  aws lambda create-function-url-config \
-    --function-name ${LAMBDA_FUNCTION_NAME} \
-    --auth-type NONE
+  # aws lambda create-function-url-config \
+  #   --function-name ${LAMBDA_FUNCTION_NAME} \
+  #   --auth-type NONE
 }
 
 function updateFunctionMetadata {
