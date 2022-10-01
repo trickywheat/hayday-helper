@@ -76,7 +76,7 @@ function createFunctionUrl {
     --function-name ${LAMBDA_FUNCTION_NAME} \
     --statement-id "FunctionURLAllowPublicAccess" \
     --action "lambda:InvokeFunction" \
-    --principle "*"
+    --principal "*"
 
   echo "Requesting a Function Url"
 
