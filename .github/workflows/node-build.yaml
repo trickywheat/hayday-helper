@@ -70,12 +70,12 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
-        environment: [development]
+        environment: [development, production]
 
     environment: ${{ matrix.environment }}
 
     env:
-      FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+      LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}-${{ matrix.environment }}
       LAMBDA_EXECUTION_ROLE: ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
 
     permissions:
@@ -109,7 +109,7 @@ jobs:
       - name: Get Lambda Status
         run: |
           aws lambda get-function-configuration \
-            --function-name ${FUNCTION_NAME}
+            --function-name ${LAMBDA_FUNCTION_NAME}
 
       - name: Update Lambda function Metadata
         run: bash .ci/deploy-lambda.bash update-metadata
