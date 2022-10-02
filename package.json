@@ -1,10 +1,12 @@
 {
   "name": "hayday-bot",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
-    "zip": "rm function.zip ; zip -r function.zip ./*",
+    "build": "rm function.zip ; zip -r function.zip ./*",
+    "create-lambda": "bash .ci/deploy-lambda.bash create",
+    "update-lambda": "bash .ci/deploy-lambda.bash update",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tricky Wheat",

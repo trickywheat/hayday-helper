@@ -1,0 +1,30 @@
+name: Quick Workflow Test
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+defaults:
+  run:
+    shell: bash
+
+
+jobs:
+  npm-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16]
+  
+    environment: development
+    
+    env:
+      LAMBDA_ENV_VARS: POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }},SHA=${{ github.sha }}
+
+    name: What is the variable
+    steps:
+      - name: echo LAMBDA_ENV_VARS
+        run: echo ${LAMBDA_ENV_VARS}
+
+      - name: echo GITHUB_SHA
+        run: echo ${GITHUB_SHA}
