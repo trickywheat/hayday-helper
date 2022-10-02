@@ -108,6 +108,14 @@ function updateFunctionMetadata {
     --environment Variables={${LAMBDA_ENV_VARS}}
 }
 
+function addTags {
+  echo "Adding tags..."
+
+  aws lambda tag-resource \
+    --function-name ${LAMBDA_FUNCTION_NAME} \
+    --tags githubRepo="trickywheat/hayday-helper"
+}
+
 
 if [[ ! -f function.zip ]]; then
   echo "function.zip must be created before running deployment."
