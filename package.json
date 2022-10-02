@@ -1,6 +1,6 @@
 {
   "name": "hayday-bot",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
