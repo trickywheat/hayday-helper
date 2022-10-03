@@ -1,17 +1,16 @@
 const discordInteractions = require('discord-interactions');
 
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
 const path = require('node:path');
 
 exports.handler = async (event, context) => {
-  console.log("webhookIntake - event: " + JSON.stringify(event));
-  console.log("webhookIntake - context: " + JSON.stringify(context));
+  console.log('webhookIntake - event: ' + JSON.stringify(event));
+  console.log('webhookIntake - context: ' + JSON.stringify(context));
 
-  let responseJson = {
+  const responseJson = {
     statusCode: 418,
     headers: {
-        'Content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: '{"message": "I am a teapot"}',
   };
@@ -19,8 +18,8 @@ exports.handler = async (event, context) => {
   let isValidRequest = false;
 
   // If running this with POSTMAN, check headers
-  if (event.hasOwnProperty('headers') && event.headers.hasOwnProperty('authorization') && 
-     (event.headers.authorization === "Bearer " + process.env.POSTMAN_VERIFY)) {
+  if (Object.prototype.hasOwnProperty.call(event, 'headers') && Object.prototype.hasOwnProperty.call(event.headers, 'authorization') &&
+     (event.headers.authorization === 'Bearer ' + process.env.POSTMAN_VERIFY)) {
     isValidRequest = true;
   } else {
     // Get valid information
@@ -40,11 +39,11 @@ exports.handler = async (event, context) => {
 
     // Check to see if Discord sent this via POST webhook
     // or if it is a callback
-    if (((event.hasOwnProperty('requestContext') && (event.requestContext.hasOwnProperty('http')) && 
-          ((event.requestContext.http.method === "POST") && (event.body.length > 1)))) || 
-        (event.hasOwnProperty('callbackExecute'))) {
+    if (((Object.prototype.hasOwnProperty.call(event, 'requestContext') && Object.prototype.hasOwnProperty.call(event.requestContext, 'http')) &&
+          ((event.requestContext.http.method === 'POST') && (event.body.length > 1))) ||
+        Object.prototype.hasOwnProperty.call(event, 'callbackExecute')) {
       const requestJSON = JSON.parse(event.body);
-      console.log("requestJson: " + JSON.stringify(requestJSON));
+      console.log('requestJson: ' + JSON.stringify(requestJSON));
 
       // Must be able to respond to a valid PING:
       // https://discord.com/developers/docs/interactions/receiving-and-responding#receiving-an-interaction
@@ -53,37 +52,42 @@ exports.handler = async (event, context) => {
 
       // Check to see if a command is being requested
       // is available as a module.
-      } else if (requestJSON.data.hasOwnProperty("name") || requestJSON.data.hasOwnProperty("custom_id")) { 
-        const command = requestJSON.data.name || requestJSON.data.custom_id || "does-not-exist";
-        console.log("Discord sent command: " + command);
+      } else if (Object.prototype.hasOwnProperty.call(requestJSON.data, 'name') || Object.prototype.hasOwnProperty.call(requestJSON.data, 'custom_id')) {
+        const command = requestJSON.data.name || requestJSON.data.custom_id || 'does-not-exist';
+        console.log('Discord sent command: ' + command);
 
         // Attempt to load the command that was received.
         // function loadCommand returns an empty object if no such command was found.
         const botCommand = loadCommand(command);
-        if (botCommand.hasOwnProperty('discordSlashMetadata') && (event.hasOwnProperty('callbackExecute') === false)) {
-          console.log("Executing command module for " + botCommand.discordSlashMetadata.name);
+        if (Object.prototype.hasOwnProperty.call(botCommand, 'discordSlashMetadata') && Object.prototype.hasOwnProperty.call(event, 'callbackExecute') === false) {
+          console.log('Executing command module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
 
-        } else if (botCommand.hasOwnProperty('discordSlashMetadata') && (event.callbackExecute <= 3)) {
-          console.log("Executing callback module for " + botCommand.discordSlashMetadata.name);
+        // If the the command has discordSlashMetadata, then it's a real command.  But make sure we're not executing this
+        // more than 3 times.
+        } else if (Object.prototype.hasOwnProperty.call(botCommand, 'discordSlashMetadata') && (event.callbackExecute <= 3)) {
+          console.log('Executing callback module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
 
+        // If we're executing this 3 times or more, return an error
         } else if (event.callbackExecute <= 3) {
+          // Ephemeral message -- viewable by invoker only
           const responseBody = {
-            "type": 4, 
-            "data": { 
-              "content": "Unable to execute `" + command + "` due to invocation limit.  Request Id: `" + event.requestContext.requestId + "`",
-              "flags": 1 << 6  // Ephemeral message -- viewable by invoker only
-            }
-          }
-          responseJson.body = JSON.stringify(responseBody);        
+            'type': 4,
+            'data': {
+              'content': 'Unable to execute `' + command + '` due to invocation limit.  Request Id: `' + event.requestContext.requestId + '`',
+              'flags': 1 << 6,
+            },
+          };
+          responseJson.body = JSON.stringify(responseBody);
         } else {
+          // Ephemeral message -- viewable by invoker only
           const responseBody = {
-            "type": 4, 
-            "data": { 
-              "content": "Command `" + command + "` does not exist.  Request Id: `" + event.requestContext.requestId + "`",
-              "flags": 1 << 6  // Ephemeral message -- viewable by invoker only
-            }
+            'type': 4,
+            'data': {
+              'content': 'Command `' + command + '` does not exist.  Request Id: `' + event.requestContext.requestId + '`',
+              'flags': 1 << 6,
+            },
           };
           responseJson.body = JSON.stringify(responseBody);
         }
@@ -91,23 +95,23 @@ exports.handler = async (event, context) => {
     }
   }
 
-  console.log("respondJson: " + JSON.stringify(responseJson));
+  console.log('respondJson: ' + JSON.stringify(responseJson));
   return responseJson;
 };
 
 
 function loadCommand(targetCommand) {
   const commandsPath = path.join(__dirname + '/commands');
-  const commandFilename = targetCommand + ".js";
+  const commandFilename = targetCommand + '.js';
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file === commandFilename && file != 'index.js');
 
   if (commandFiles.length == 0) return {};
 
   const filePath = path.join(commandsPath, commandFilename);
-  console.log("Loading: " + filePath);
+  console.log('Loading: ' + filePath);
   const command = require(filePath);
 
-  console.log("Loaded: " + command.discordSlashMetadata.name + ": (TYPE: " + command.discordSlashMetadata.type + ") " + command.discordSlashMetadata.description);
+  console.log('Loaded: ' + command.discordSlashMetadata.name + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
 
   return command;
 }

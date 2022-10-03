@@ -1,4 +1,4 @@
-require('dotenv').config({"path": "../.env" });
+require('dotenv').config({'path': '../.env' });
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const fs = require('node:fs');
 const path = require('node:path');
