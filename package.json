@@ -19,6 +19,7 @@
     "node-fetch": "^3.2.10"
   },
   "devDependencies": {
-    "esbuild": "^0.15.9"
+    "esbuild": "^0.15.9",
+    "eslint": "^8.24.0"
   }
 }
