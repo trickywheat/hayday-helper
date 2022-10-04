@@ -142,7 +142,7 @@ async function sendInitialThreadMessage(createThreadRequestJSON, guildMember) {
 
   // TODO: This will need to be updated for each type of request.
   const messageComponents = {
-    'content': `Can you help out ${guildMember}?\nDiscuss your request in this thread.  Once you are done, click the buttom below to delete the thread.  **WARNING:** Once a thread is deleted, it cannot be recovered.`,
+    'content': `Can you help out ${guildMember}?\nDiscuss your request in this thread.  Once you are done, click the button below (or use the slash command \`deletethread\`) to delete the thread.\n\n**WARNING:** Once a thread is deleted, it cannot be recovered.`,
     'components': [
       {
         'type': 1,
