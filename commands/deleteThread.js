@@ -10,7 +10,7 @@ module.exports = {
   'discordSlashMetadata': {
     'name': 'deleteThread',
     'type': 1,
-    'description': 'Delete Thread',
+    'description': 'Deletes a Request Thread; Must be used in the thread to be deleted.',
   },
 
   async execute(requestJSON, lambdaEvent, lambdaContext) {

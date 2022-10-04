@@ -103,11 +103,11 @@ exports.handler = async (event, context) => {
 function loadCommand(targetCommand) {
   const commandsPath = path.join(__dirname + '/commands');
   const commandFilename = targetCommand + '.js';
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file === commandFilename && file != 'index.js');
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
 
   if (commandFiles.length == 0) return {};
 
-  const filePath = path.join(commandsPath, commandFilename);
+  const filePath = path.join(commandsPath, commandFiles[0]);
   console.log('Loading: ' + filePath);
   const command = require(filePath);
 
