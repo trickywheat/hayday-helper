@@ -1,6 +1,6 @@
 {
   "name": "hayday-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "node-fetch": "^3.2.10"
   },
   "devDependencies": {
-    "esbuild": "^0.15.9"
+    "esbuild": "^0.15.9",
+    "eslint": "^8.24.0"
   }
 }
