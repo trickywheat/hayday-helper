@@ -77,14 +77,32 @@ module.exports = {
     // Get message contents
     const messageContentsJSON = await getRequestMessageContents(threadChannelId);
 
-    // Send edited message
-    await editInitialMessageEmbed(messageContentsJSON, guildMember);
+    try {
+      // Send edited message
+      await editInitialMessageEmbed(messageContentsJSON, guildMember);
 
-    // Delete Thread
-    await deleteThread(threadChannelId);
+      // Delete Thread
+      await deleteThread(threadChannelId);
+    } catch (error) {
+      await sendErrorMessage(requestJSON.application_id, requestJSON.token);
+    }
+
     return responseJson;
   },
 };
+
+
+async function sendErrorMessage(applicationId, requestToken) {
+  const url = `https://discord.com/api/v10/webhooks/${applicationId}/${requestToken}`;
+  const payloadBody = {
+    'content': 'Unable to delete this thread.  It might be a thread I am not permitted to delete.  If you think you are getting this in error, please tell my developer.',
+  };
+
+  console.log('Responding to inital status message.');
+  const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
+
+  return payloadResponse;
+}
 
 
 async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
