@@ -14,7 +14,7 @@ module.exports = {
     const packageJson = require('../package.json');
 
     const regex = new RegExp('(^\\w{3})\\w+(\\w{3})', 'gm');
-    const subst = `$1...$2`;
+    const subst = '$1...$2';
     const buildId = process.env.buildId || 'local-build';
     const commitSha = process.env.commitSha || 'local-commit';
     const functionUrl = lambdaEvent.requestContext.domainPrefix.replace(regex, subst) || 'local-deployment';
