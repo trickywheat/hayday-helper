@@ -9,7 +9,7 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 module.exports = {
   'discordSlashMetadata': {
     'name': 'requestHelpMessage',
-    'type': 1,
+    'type': -1,
     'description': 'Processes Request Help Message modal',
   },
 
