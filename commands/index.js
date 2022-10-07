@@ -23,8 +23,11 @@ async function installSlashCommands() {
 
     if (Object.prototype.hasOwnProperty.call(command, 'discordSlashMetadata') && (command.discordSlashMetadata.type > 0)) {
 
-      console.log('Installing: ' + command.discordSlashMetadata.name + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
-      await sendPayloadToDiscord(url, command.discordSlashMetadata);
+      let commandMetadata = command.discordSlashMetadata;
+      commandMetadata.name = commandMetadata.name.toLowerCase();
+
+      console.log('Installing: ' + commandMetadata.name + ': (TYPE: ' + commandMetadata.type + ') ' + commandMetadata.description);
+      await sendPayloadToDiscord(url, commandMetadata);
     }
   }
 }
