@@ -89,6 +89,7 @@ module.exports = {
       // Finally, delete the thread
       await deleteThread(threadChannelId);
     } else {
+      console.log(`There was an issue deleting the thread.  threadChannelInfoJSON.owner_id: ${threadChannelInfoJSON.owner_id} -- threadChannelInfoJSON.type: ${threadChannelInfoJSON.type}`);
       await sendErrorMessage(requestJSON.application_id, requestJSON.token, lambdaContext.awsRequestId);
     }
 
