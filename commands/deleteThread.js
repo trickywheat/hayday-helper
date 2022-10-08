@@ -78,8 +78,10 @@ module.exports = {
     const messageContentsJSON = await getRequestMessageContents(threadChannelId);
 
     try {
-      // Send edited message
-      await editInitialMessageEmbed(messageContentsJSON, guildMember);
+      // If the original message hasn't already been deleted, go ahead and edit it
+      if (!Object.prototype.hasOwnProperty.call(messageContentsJSON, 'code')) {
+        await editInitialMessageEmbed(messageContentsJSON, guildMember);
+      }
 
       // Delete Thread
       await deleteThread(threadChannelId);
@@ -98,7 +100,7 @@ async function sendErrorMessage(applicationId, requestToken) {
     'content': 'Unable to delete this thread.  It might be a thread I am not permitted to delete.  If you think you are getting this in error, please tell my developer.',
   };
 
-  console.log('Responding to inital status message.');
+  console.log('Responding to initial status message.');
   const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
 
   return payloadResponse;
@@ -118,7 +120,7 @@ async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
     'embeds': messageEmbed,
   };
 
-  console.log('Send edited initial embeded message...');
+  console.log('Send edited initial embedded message...');
   const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
   return editMessageResponseJSON;
 }
