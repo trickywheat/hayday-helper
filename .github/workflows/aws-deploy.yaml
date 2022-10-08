@@ -119,5 +119,5 @@ jobs:
       - name: Update Lambda function Metadata
         run: bash .ci/deploy-lambda.bash update-metadata
         env:
-          LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }}
+          LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},DISCORD_BOT_APP_ID=${{ secrets.DISCORD_BOT_APP_ID }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }}
 
