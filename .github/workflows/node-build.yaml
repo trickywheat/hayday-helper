@@ -43,6 +43,7 @@ jobs:
   aws-deploy-dev:
     if: startsWith(github.ref_name, 'dev-')
     uses: ./.github/workflows/aws-deploy.yaml
+    secrets: inherit
     with: 
       environment-name: development
 
@@ -50,5 +51,6 @@ jobs:
   aws-deploy-qa-prod:
     if: startsWith(github.ref_name, 'qa-')
     uses: ./.github/workflows/aws-deploy.yaml
+    secrets: inherit
     with: 
       environment-name: production
