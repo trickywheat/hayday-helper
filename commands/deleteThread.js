@@ -59,13 +59,13 @@ module.exports = {
 
   // Since this is executed by Lambda, a Discord-type response is not needed,
   // but let's follow the convention
-  async callbackExecute(requestJSON, lambdaEvent) {
+  async callbackExecute(requestJSON, _lambdaEvent, lambdaContext) {
     console.log('deleteThread - callbackExecute');
     // Ephemeral message -- viewable by invoker only
     const responseJson = {
       'type': 4,
       'data': {
-        'content': 'Lambda callback executed.  requestId `' + lambdaEvent.awsRequestId + '`',
+        'content': 'Lambda callback executed.  requestId: `' + lambdaContext.awsRequestId + '`',
         'flags': 1 << 6,
       },
     };
@@ -73,20 +73,23 @@ module.exports = {
     const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
     const threadChannelId = requestJSON.channel_id;
 
+    const threadChannelInfoJSON = await getChannelInformation(threadChannelId);
 
-    // Get message contents
-    const messageContentsJSON = await getRequestMessageContents(threadChannelId);
+    // If the bot owns the channel and it's a PUBLIC thread, then attempt to get the message contents.
+    if ((threadChannelInfoJSON.owner_id === process.env.DISCORD_BOT_APP_ID) &&
+        (threadChannelInfoJSON.type === 11)) {
 
-    try {
-      // If the original message hasn't already been deleted, go ahead and edit it
-      if (!Object.prototype.hasOwnProperty.call(messageContentsJSON, 'code')) {
+      const messageContentsJSON = await getRequestMessageContents(threadChannelInfoJSON.parent_id, threadChannelId);
+
+      // If the message contains an embeds, it's the initial message sent.  Edit the message
+      if (Object.prototype.hasOwnProperty.call(messageContentsJSON, 'embeds')) {
         await editInitialMessageEmbed(messageContentsJSON, guildMember);
       }
 
-      // Delete Thread
+      // Finally, delete the thread
       await deleteThread(threadChannelId);
-    } catch (error) {
-      await sendErrorMessage(requestJSON.application_id, requestJSON.token);
+    } else {
+      await sendErrorMessage(requestJSON.application_id, requestJSON.token, lambdaContext.awsRequestId);
     }
 
     return responseJson;
@@ -94,10 +97,10 @@ module.exports = {
 };
 
 
-async function sendErrorMessage(applicationId, requestToken) {
+async function sendErrorMessage(applicationId, requestToken, requestId = 'unknown-requestId') {
   const url = `https://discord.com/api/v10/webhooks/${applicationId}/${requestToken}`;
   const payloadBody = {
-    'content': 'Unable to delete this thread.  It might be a thread I am not permitted to delete.  If you think you are getting this in error, please tell my developer.',
+    'content': `Unable to delete this thread.  It might be a thread I am not permitted to delete.  If you think you are getting this in error, please tell my developer.  requestId: \`${requestId}\``,
   };
 
   console.log('Responding to initial status message.');
@@ -126,18 +129,22 @@ async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
 }
 
 
-async function getRequestMessageContents(channelId) {
-  // Get thread info
-  let url = `https://discord.com/api/v10/channels/${channelId}`;
-  console.log('Getting channel information for threadId: ' + channelId);
-  const threadChannelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
-  console.log('Thread\'s Parent: ' + threadChannelInfoJSON.parent_id);
-
-  url = `https://discord.com/api/v10/channels/${threadChannelInfoJSON.parent_id}/messages/${channelId}`;
+async function getRequestMessageContents(parentId, channelId) {
+  const url = `https://discord.com/api/v10/channels/${parentId}/messages/${channelId}`;
   console.log('Getting message contents for initial embed...');
   const messageContentsJSON = await sendPayloadToDiscord(url, {}, 'get');
 
   return messageContentsJSON;
+}
+
+async function getChannelInformation(channelId) {
+  // Get thread info
+  const url = `https://discord.com/api/v10/channels/${channelId}`;
+  console.log('Getting channel information for threadId: ' + channelId);
+  const threadChannelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
+  console.log('Thread\'s Parent: ' + threadChannelInfoJSON.parent_id);
+
+  return threadChannelInfoJSON;
 }
 
 
