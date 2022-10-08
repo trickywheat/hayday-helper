@@ -94,7 +94,7 @@ function updateFunctionMetadata {
     echo $LAMBDA_ENV_VARS
   fi
 
-  if [[! -z $GITHUB_ACTION ]]; then
+  if [[ ! -z $GITHUB_ACTION ]]; then
     echo "Hello Github Actions Worflow: ${GITHUB_WORKFLOW}"
     GIT_SHA=$GITHUB_SHA
     BUILD_ID=${GITHUB_RUN_ID}
