@@ -58,6 +58,9 @@ jobs:
       - name: Execute slash-command installer
         run: |
           cd commands/
+          echo $DISCORD_BOT_APP_ID | md5sum
+          echo $TARGET_GUILD_ID | md5sum
+          echo $DISCORD_BOT_TOKEN | md5sum
           node index.js
         env:
           DISCORD_BOT_APP_ID: ${{ secrets.DISCORD_BOT_APP_ID }}
