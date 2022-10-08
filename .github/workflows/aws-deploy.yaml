@@ -71,7 +71,7 @@ jobs:
 # ----------------------------- #
 
   aws-deploy:
-    needs: npm-build
+    needs: npm-build-discord-slash-deploy
     runs-on: ubuntu-latest
     strategy:
       matrix:
