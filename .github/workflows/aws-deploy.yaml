@@ -59,6 +59,9 @@ jobs:
         run: |
           cd commands/
           node index.js
+        env:
+          DISCORD_BOT_APP_ID: ${{ secrets.DISCORD_BOT_APP_ID }}
+          TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
 
       - name: Upload Zip File for Downstream Use
         uses: actions/upload-artifact@v3
