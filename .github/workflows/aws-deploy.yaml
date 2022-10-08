@@ -16,8 +16,6 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
-
-    environment: ${{ inputs.environment-name }}
     
     name: Node ${{ matrix.node-version }} build
     steps:
@@ -116,7 +114,7 @@ jobs:
       - name: Update Lambda function Metadata
         run: bash .ci/deploy-lambda.bash update-metadata
         env:
-          LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},DISCORD_BOT_APP_ID=${{POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }}
+          LAMBDA_ENV_VARS: DISCORD_BOT_PUBLIC_KEY=${{ secrets.DISCORD_BOT_PUBLIC_KEY }},DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }},DISCORD_BOT_APP_ID=${{ secrets.DISCORD_BOT_APP_ID }},POSTMAN_VERIFY=${{ secrets.POSTMAN_VERIFY }}
 
   discord-deploy:
     needs: npm-build
