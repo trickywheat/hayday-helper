@@ -6,7 +6,7 @@
 module.exports = {
   'discordSlashMetadata': {
     'name': 'requestHelpMenu',
-    'type': 1,
+    'type': -1,
     'description': 'Request items in Hay Day',
     'options': [
       {

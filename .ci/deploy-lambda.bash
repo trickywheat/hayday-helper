@@ -91,12 +91,22 @@ function updateFunctionMetadata {
     echo "Parsing function .env file..."
     LAMBDA_ENV_VARS=$(sed -z 's/\n/,/g' .env)
 
-    echo "Adding git SHA"
-    GIT_SHA=$(git rev-parse HEAD)
-    LAMBDA_ENV_VARS=${LAMBDA_ENV_VARS},SHA=${GIT_SHA}
-
     echo $LAMBDA_ENV_VARS
   fi
+
+  if [[! -z $GITHUB_ACTION ]]; then
+    echo "Hello Github Actions Worflow: ${GITHUB_WORKFLOW}"
+    GIT_SHA=$GITHUB_SHA
+    BUILD_ID=${GITHUB_RUN_ID}
+  else 
+    echo "Adding git SHA"
+    GIT_SHA=$(git rev-parse HEAD)
+
+    echo "Setting BUILD_ID to local-build"
+    BUILD_ID="local-build"
+  fi
+
+  LAMBDA_ENV_VARS=${LAMBDA_ENV_VARS},SHA=${GIT_SHA},BUILD_ID=${BUILD_ID}
 
   echo "Updating Lambda Function's Metadata..."
   aws lambda update-function-configuration \
