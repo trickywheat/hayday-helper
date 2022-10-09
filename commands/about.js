@@ -19,6 +19,13 @@ module.exports = {
     const commitSha = process.env.SHA || 'local-commit';
     const functionUrl = lambdaEvent.requestContext.domainPrefix.replace(regex, subst) || 'local-deployment';
 
+    let buildUrl = 'https://github.com/trickywheat/hayday-helper/actions';
+    let commitUrl = 'https://github.com/trickywheat/hayday-helper';
+    if (commitSha !== 'local-commit') {
+      commitUrl = `https://github.com/trickywheat/hayday-helper/commit/${commitSha}`;
+      buildUrl = `${commitUrl}/checks`;
+    }
+
     const responseJson = {
       'type': 4,
       'data': {
@@ -26,7 +33,7 @@ module.exports = {
         'embeds': [
           {
             'title': `Hayday Helper Bot - v${packageJson.version}`,
-            'description': `Developed with ♥ and 🍪.\n\nBuild: ${buildId}\nCommit SHA: ${commitSha}\nAbstract function URL: ${functionUrl}\n\nTo submit a bug report or make a feature request, please [create an Issue in GitHub](https://github.com/trickywheat/hayday-helper/issues). `,
+            'description': `Developed with ♥ and 🍪.\n\nBuild: [${buildId}](${buildUrl})\nCommit SHA: [${commitSha}](${commitUrl})\nAbstract function URL: ${functionUrl}\n\nTo submit a bug report or make a feature request, please [create an Issue in GitHub](https://github.com/trickywheat/hayday-helper/issues). `,
             'color': 0x00FFFF,
           },
         ],
