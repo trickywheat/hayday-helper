@@ -23,6 +23,7 @@ async function installSlashCommands() {
 
     if (Object.prototype.hasOwnProperty.call(command, 'discordSlashMetadata') && (command.discordSlashMetadata.type > 0)) {
 
+      // eslint-disable-next-line prefer-const
       let commandMetadata = command.discordSlashMetadata;
       commandMetadata.name = commandMetadata.name.toLowerCase();
 
