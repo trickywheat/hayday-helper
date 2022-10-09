@@ -1,4 +1,4 @@
-name: Node Build and Deploy
+name: Deploy to AWS
 on:
   workflow_call:
     inputs:
@@ -54,18 +54,6 @@ jobs:
 
       - name: zip up the folder
         run: npm run build
-
-      - name: Execute slash-command installer
-        run: |
-          cd commands/
-          echo $DISCORD_BOT_APP_ID | md5sum
-          echo $TARGET_GUILD_ID | md5sum
-          echo $DISCORD_BOT_TOKEN | md5sum
-          node index.js
-        env:
-          DISCORD_BOT_APP_ID: ${{ secrets.DISCORD_BOT_APP_ID }}
-          TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
       - name: Upload Zip File for Downstream Use
         uses: actions/upload-artifact@v3
