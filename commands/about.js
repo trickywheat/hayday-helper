@@ -16,7 +16,7 @@ module.exports = {
     const regex = new RegExp('(^\\w{3})\\w+(\\w{3})', 'gm');
     const subst = '$1...$2';
     const buildId = process.env.BUILD_ID || 'local-build';
-    const commitSha = process.env.GIT_SHA || 'local-commit';
+    const commitSha = process.env.SHA || 'local-commit';
     const functionUrl = lambdaEvent.requestContext.domainPrefix.replace(regex, subst) || 'local-deployment';
 
     const responseJson = {
