@@ -97,7 +97,7 @@ function updateFunctionMetadata {
   if [[ ! -z $GITHUB_ACTION ]]; then
     echo "Hello Github Actions Worflow: ${GITHUB_WORKFLOW}"
     GIT_SHA=$GITHUB_SHA
-    BUILD_ID=${GITHUB_RUN_ID}
+    BUILD_ID=${GITHUB_RUN_NUMBER}
   else 
     echo "Adding git SHA"
     GIT_SHA=$(git rev-parse HEAD)
