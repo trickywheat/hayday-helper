@@ -32,7 +32,7 @@ module.exports = {
         'flags': 1 << 6,
         'embeds': [
           {
-            'title': `Hayday Helper Bot - v${packageJson.version}`,
+            'title': `HayDay Helper Bot - v${packageJson.version}`,
             'description': `Developed with ♥ and 🍪.\n\nBuild: [${buildId}](${buildUrl})\nCommit SHA: [${commitSha}](${commitUrl})\nAbstract function URL: ${functionUrl}\n\nTo submit a bug report or make a feature request, please [create an Issue in GitHub](https://github.com/trickywheat/hayday-helper/issues). `,
             'color': 0x00FFFF,
           },
