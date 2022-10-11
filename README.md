@@ -1,6 +1,6 @@
 # HayDay Helper Discord Bot - Built on AWS Lambda
 
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/trickywheat/hayday-helper)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/trickywheat/hayday-helper?label=latest%20release)
 
 I built a bot that helps a Discord server keep it's requests organized and orderly.  All using AWS Lambdas.
 
