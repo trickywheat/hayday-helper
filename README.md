@@ -1,5 +1,7 @@
 # HayDay Helper Discord Bot - Built on AWS Lambda
 
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/trickywheat/hayday-helper)
+
 I built a bot that helps a Discord server keep it's requests organized and orderly.  All using AWS Lambdas.
 
 This bot currently has one feature: it builds a drop-down menu giving members the ability to request different types of things: rares, crops, tasks, etc.
@@ -20,5 +22,6 @@ While I used [@jakjus's](https://github.com/jakjus) [article as a guide](https:/
 |------|-------------|----------|
 | DISCORD_BOT_PUBLIC_KEY | Your Discord Bot's public key, available from the bot's Application "General Information" | Yes |
 | DISCORD_BOT_TOKEN	| Your Discord Bot's Token Secret, available from the bot's Application "Bot" page | Yes |
+| DISCORD_BOT_APP_ID | Your Discord Bot's App ID, available from the bot's Application "Bot" page | Yes |
 | POSTMAN_VERIFY | For fast prototyping, you can trigger your lambda using it's Function URL.  To authenticate, you can give this variable a long random string, such as a UUID. | No |
 
