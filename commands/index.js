@@ -23,6 +23,7 @@ async function installSlashCommands() {
 
     if (Object.prototype.hasOwnProperty.call(command, 'discordSlashMetadata') && (command.discordSlashMetadata.type > 0)) {
 
+      // eslint-disable-next-line prefer-const
       let commandMetadata = command.discordSlashMetadata;
       commandMetadata.name = commandMetadata.name.toLowerCase();
 
@@ -48,7 +49,9 @@ async function sendPayloadToDiscord(url, body, method = 'post') {
   // Webhook URLs have 'webhooks' and the discord bot app ID.
   // These responses should be sent with the token that was
   // received in the original request.
-  if (url.indexOf('webhooks/' + process.env.DISCORD_BOT_APP_ID) == -1) {payloadJSON.headers['Authorization'] = `Bot ${process.env.DISCORD_BOT_TOKEN}`;}
+  if (url.indexOf('webhooks/' + process.env.DISCORD_BOT_APP_ID) == -1) {
+    payloadJSON.headers['Authorization'] = `Bot ${process.env.DISCORD_BOT_TOKEN}`;
+  }
 
   console.log('Sending to url: ' + method + ' ' + url);
   console.log('Sending payload to Discord: ' + JSON.stringify(payloadJSON));

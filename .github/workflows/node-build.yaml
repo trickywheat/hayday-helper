@@ -47,10 +47,23 @@ jobs:
     with: 
       environment-name: development
 
+  discord-deploy-dev:
+    if: startsWith(github.ref_name, 'dev-')
+    uses: ./.github/workflows/discord-slash-commands-deploy.yaml
+    secrets: inherit
+    with: 
+      environment-name: development
 
   aws-deploy-qa-prod:
     if: startsWith(github.ref_name, 'qa-')
     uses: ./.github/workflows/aws-deploy.yaml
+    secrets: inherit
+    with: 
+      environment-name: production
+
+  discord-deploy-qa-prod:
+    if: startsWith(github.ref_name, 'qa-')
+    uses: ./.github/workflows/discord-slash-commands-deploy.yaml
     secrets: inherit
     with: 
       environment-name: production
