@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
   }
 
   if (!isValidRequest) {
-    responseJson.status = 401;
+    responseJson.statusCode = 401;
     responseJson.body = '{"message": "Bad request signature"}';
   } else {
     // It's a valid request.  Set status to 200 universally
