@@ -3,11 +3,12 @@
   "version": "1.2.1",
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "rm function.zip ; zip -r function.zip ./*",
     "create-lambda": "bash .ci/deploy-lambda.bash create",
     "update-lambda": "bash .ci/deploy-lambda.bash update",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "Tricky Wheat",
   "license": "AGPL",
@@ -19,7 +20,7 @@
     "node-fetch": "^3.2.10"
   },
   "devDependencies": {
-    "esbuild": "^0.15.9",
-    "eslint": "^8.24.0"
+    "eslint": "^8.24.0",
+    "jest": "^29.7.0"
   }
 }
