@@ -1,9 +1,13 @@
-const discordInteractions = require('discord-interactions');
+import { verifyKey } from 'discord-interactions';
 
-const fs = require('node:fs');
-const path = require('node:path');
+import { fileURLToPath } from 'node:url';
+import { readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 
-exports.handler = async (event, context) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export const handler = async (event, context) => {
   console.log('webhookIntake - event: ' + JSON.stringify(event));
   console.log('webhookIntake - context: ' + JSON.stringify(context));
 
@@ -27,7 +31,7 @@ exports.handler = async (event, context) => {
     const timestamp = event.headers['x-signature-timestamp'];
     const publicKey = process.env.DISCORD_BOT_PUBLIC_KEY;
 
-    isValidRequest = discordInteractions.verifyKey(event.body, signature, timestamp, publicKey);
+    isValidRequest = verifyKey(event.body, signature, timestamp, publicKey);
   }
 
   if (!isValidRequest) {
@@ -58,7 +62,7 @@ exports.handler = async (event, context) => {
 
         // Attempt to load the command that was received.
         // function loadCommand returns an empty object if no such command was found.
-        const botCommand = loadCommand(command);
+        const botCommand = await loadCommand(command);
         if (Object.prototype.hasOwnProperty.call(botCommand, 'discordSlashMetadata') && Object.prototype.hasOwnProperty.call(event, 'callbackExecute') === false) {
           console.log('Executing command module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
@@ -100,16 +104,16 @@ exports.handler = async (event, context) => {
 };
 
 
-function loadCommand(targetCommand) {
-  const commandsPath = path.join(__dirname + '/commands');
+async function loadCommand(targetCommand) {
+  const commandsPath = join(__dirname + '/commands');
   const commandFilename = targetCommand + '.js';
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
+  const commandFiles = readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
 
   if (commandFiles.length == 0) return {};
 
-  const filePath = path.join(commandsPath, commandFiles[0]);
+  const filePath = join(commandsPath, commandFiles[0]);
   console.log('Loading: ' + filePath);
-  const command = require(filePath);
+  const command = await import(filePath);
 
   console.log('Loaded: ' + command.discordSlashMetadata.name + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
 
