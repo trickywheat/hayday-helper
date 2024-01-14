@@ -115,7 +115,7 @@ async function loadCommand(targetCommand) {
   console.log('Loading: ' + filePath);
   const command = await import(filePath);
 
-  console.log('Loaded: ' + command.discordSlashMetadata.name + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
+  console.log('Loaded: ' + filePath + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
 
   return command;
 }
