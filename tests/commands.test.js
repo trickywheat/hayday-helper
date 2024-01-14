@@ -1,6 +1,6 @@
 import { handler } from '../index';
 
-test('Postman Ping Test', async () => {
+test('Command: about', async () => {
   const lambdaEvent = {
     'headers': {
       'authorization': 'Bearer ' + process.env.POSTMAN_VERIFY,
@@ -27,7 +27,7 @@ test('Postman Ping Test', async () => {
   expect(bodyJson.type).toBe(4);
 });
 
-test('Postman Ping Test', async () => {
+test('Command: ping', async () => {
   const lambdaEvent = {
     'headers': {
       'authorization': 'Bearer ' + process.env.POSTMAN_VERIFY,
