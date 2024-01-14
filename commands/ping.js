@@ -3,21 +3,21 @@
   Type: CHAT_INPUT
 */
 
-module.exports = {
+export const discordSlashMetadata = {
   'discordSlashMetadata': {
     'name': 'ping',
     'type': 1,
     'description': 'ping!  Replies with pong.',
   },
-
-  execute() {
-    const responseJson = {
-      'type': 4,
-      'data': {
-        'content': 'PONG!',
-      },
-    };
-
-    return responseJson;
-  },
 };
+
+export function execute() {
+  const responseJson = {
+    'type': 4,
+    'data': {
+      'content': 'PONG!',
+    },
+  };
+
+  return responseJson;
+}
