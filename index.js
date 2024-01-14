@@ -105,7 +105,7 @@ export const handler = async (event, context) => {
 
 
 async function loadCommand(targetCommand) {
-  const commandsPath = join(__dirname + '/commands');
+  const commandsPath = join(__dirname + '/new-commands');
   const commandFilename = targetCommand + '.js';
   const commandFiles = readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
 
