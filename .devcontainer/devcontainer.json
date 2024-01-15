@@ -24,8 +24,8 @@
 
   "containerEnv": {
     "WORKSPACE": "${containerWorkspaceFolder}",
-    "AWS_PROFILE": "foo",
-    "AWS_REGION": "bar"
+    "AWS_PROFILE": "vs-hotel-delta",
+    "AWS_REGION": "us-east-1"
   },
 
   "customizations": {
