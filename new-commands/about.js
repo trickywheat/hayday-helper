@@ -2,16 +2,17 @@
   Ping Command
   Type: CHAT_INPUT
 */
+import { discordConstants } from './discordConsts.js';
 
 export const discordSlashMetadata = {
   'name': 'about',
-  'type': 1,
+  'type': discordConstants.applicationCommandType.CHAT_INPUT,
   'description': 'Gives you information about the bot.',
 };
 
 export function execute(_requestJSON, lambdaEvent) {
   const npmVersion = process.env.npm_package_version || 'undefined';
-  // "0.1.0+build.19-commit.a37074cc008d90ec9b87279232cc6014e3312e9c"
+  // "1.5.0+build.5-commit.57cffe2ecb84cc0a644b76a4d9a4b17e0769abbb"
 
   const versionObject = {
     'version': npmVersion.split('+')[0],
@@ -41,9 +42,9 @@ export function execute(_requestJSON, lambdaEvent) {
   }
 
   const responseJson = {
-    'type': 4,
+    'type': discordConstants.responseComponentType.textInput,
     'data': {
-      'flags': 1 << 6,
+      'flags': discordConstants.messageFlags.EPHEMERAL,
       'embeds': [
         {
           'title': `HayDay Helper Bot - v${versionObject.version}`,

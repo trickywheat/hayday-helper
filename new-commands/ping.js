@@ -2,11 +2,12 @@
   Ping Command
   Type: CHAT_INPUT
 */
+import { discordConstants } from './discordConsts.js';
 
 export const discordSlashMetadata = {
   'discordSlashMetadata': {
     'name': 'ping',
-    'type': 1,
+    'type': discordConstants.applicationCommandType.CHAT_INPUT,
     'description': 'ping!  Replies with pong.',
   },
 };
