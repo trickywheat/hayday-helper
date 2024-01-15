@@ -25,7 +25,8 @@
   "containerEnv": {
     "WORKSPACE": "${containerWorkspaceFolder}",
     "AWS_PROFILE": "vs-hotel-delta",
-    "AWS_REGION": "us-east-1"
+    "AWS_REGION": "us-east-1",
+    "AWS_PAGER": ""
   },
 
   "customizations": {
