@@ -17,7 +17,7 @@ export async function execute(requestJSON, _event, _context) {
   console.log('derbyName: ' + derbyName);
   const { [derbyName]: derbyConfig } = discordSlashMetadata.config.derbytype.find((element) => Object.keys(element)[0] == derbyName);
 
-  responseJson.data.embeds = derbyConfig.infoEmbed;
+  responseJson.data.embeds = [derbyConfig.infoEmbed];
 
   return responseJson;
 }
