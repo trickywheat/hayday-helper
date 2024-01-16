@@ -1,7 +1,7 @@
 import { verifyKey } from 'discord-interactions';
 
 import { fileURLToPath } from 'node:url';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -109,9 +109,15 @@ async function loadCommand(targetCommand) {
   const commandFilename = targetCommand + '.js';
   const commandFiles = readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
 
-  if (commandFiles.length == 0) return {};
+  let filePath = {};
+  if (commandFiles.length == 1) {
+    filePath = join(commandsPath, commandFiles[0]);
+  } else if (commandFiles.length == 0) {
+    const commandFile = join(commandsPath + '/' + targetCommand + '/index.js');
+    filePath = (existsSync(commandFile) ? commandFile : null);
+  }
 
-  const filePath = join(commandsPath, commandFiles[0]);
+  if (filePath == null) return {};
   console.log('Loading: ' + filePath);
   const command = await import(filePath);
 

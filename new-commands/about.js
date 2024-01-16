@@ -45,7 +45,7 @@ export async function execute(_requestJSON, lambdaEvent) {
   }
 
   const responseJson = {
-    'type': discordConstants.responseComponentType.textInput,
+    'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
     'data': {
       'flags': discordConstants.messageFlags.EPHEMERAL,
       'embeds': [
