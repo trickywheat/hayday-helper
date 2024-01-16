@@ -25,3 +25,8 @@ While I used [@jakjus's](https://github.com/jakjus) [article as a guide](https:/
 | DISCORD_BOT_APP_ID | Your Discord Bot's App ID, available from the bot's Application "Bot" page | Yes |
 | POSTMAN_VERIFY | For fast prototyping, you can trigger your lambda using it's Function URL.  To authenticate, you can give this variable a long random string, such as a UUID. | No |
 
+# TODO:
+
+Review Stream-responses:
+* https://www.trek10.com/blog/aws-lambda-functions-return-response-and-continue-executing
+* https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html

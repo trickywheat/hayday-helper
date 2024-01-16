@@ -67,7 +67,14 @@ test('Command: setupderby', async () => {
     },
     'body': JSON.stringify({
       'data': {
-        'custom_id': 'setupderby',
+        'name': 'setupderby',
+        'options': [
+          {
+            'name': 'derbytype',
+            'type': 3,
+            'value': 'derby_bingo',
+          },
+        ],
       },
     }),
   };
@@ -76,5 +83,5 @@ test('Command: setupderby', async () => {
   expect(result.statusCode).toEqual(200);
   console.log(JSON.stringify(result));
 
-  expect(result.body).toMatch('Normal Derby');
+  expect(result.body).toMatch('Bingo Derby');
 });
