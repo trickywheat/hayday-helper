@@ -29,3 +29,5 @@ discordSlashMetadata.commandMetadata = {
     },
   ],
 };
+
+export { discordSlashMetadata };

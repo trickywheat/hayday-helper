@@ -5,7 +5,7 @@ export { discordSlashMetadata };
 
 export async function execute(requestJSON, _event, _context) {
   const responseJson = {
-    'type': discordConstants.responseInteractionType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+    'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
     'data': {
       'flags': discordConstants.messageFlags.EPHEMERAL,
     },
