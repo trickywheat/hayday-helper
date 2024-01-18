@@ -19,5 +19,11 @@ export async function execute(requestJSON, _event, _context) {
 
   responseJson.data.embeds = [derbyConfig.infoEmbed];
 
+  // Gets the next Tuesday's date
+  // https://stackoverflow.com/questions/33078406/getting-the-date-of-next-monday
+  const d = new Date();
+  d.setDate(d.getDate() + (2 + 7 - d.getDay()) % 7);
+  responseJson.data.embeds[0].title += ' - ' + d.toDateString();
+
   return responseJson;
 }
