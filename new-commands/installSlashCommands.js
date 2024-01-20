@@ -1,5 +1,5 @@
-import { dotenv } from 'dotenv';
-dotenv.config({ 'path': '../.env' });
+import dotenv from 'dotenv';
+dotenv.config({ 'path': '../../.env' });
 
 export async function installSlashCommand(body, method = 'post') {
   // Current Scope: GUILD
@@ -8,6 +8,7 @@ export async function installSlashCommand(body, method = 'post') {
     'method': method,
     'headers': {
       'Accept': '*/*',
+      'Authorization': 'Bot ' + process.env.DISCORD_BOT_TOKEN,
     },
   };
 
@@ -18,6 +19,7 @@ export async function installSlashCommand(body, method = 'post') {
 
   console.log('Sending to url: ' + method + ' ' + url);
   console.log('Sending payload to Discord: ' + JSON.stringify(payloadJSON));
+  if (url.includes('undefined')) return null;
   const payloadResponse = await fetch(url, payloadJSON);
   console.log('Payload Response: ' + JSON.stringify(payloadResponse.headers.get('content-type')));
 
