@@ -1,30 +1,32 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
 import { installSlashCommand } from '../installSlashCommands.js';
+import { invokeLambda, loadModule } from '../utilities.js';
 
 export { discordSlashMetadata };
 
-export async function execute(requestJSON, _event, _context) {
+export async function execute(_requestJSON, lambdaEvent, lambdaContext) {
+  const responseJson = await invokeLambda(lambdaEvent, lambdaContext);
+
+  return responseJson;
+}
+
+// Since this is executed by Lambda, a Discord-type response is not needed,
+// but let's follow the convention
+export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
+  console.log('blossomderby - callbackExecute');
+
   const responseJson = {
     'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
-    'data': {},
+    'data': {
+      'content': 'Lambda callback executed.  requestId `' + lambdaContext.awsRequestId + '`',
+      'flags': discordConstants.messageFlags.EPHEMERAL,
+    },
   };
-  console.log('requestJSON: ' + JSON.stringify(requestJSON));
 
-  const { value: requestedDerbyType } = requestJSON.data.options[0];
-  const [ , derbyName ] = requestedDerbyType.split('_');
-
-  console.log('requestedDerbyType: ' + requestedDerbyType);
-  console.log('derbyName: ' + derbyName);
-  const { [derbyName]: derbyConfig } = discordSlashMetadata.config.derbytype.find((element) => Object.keys(element)[0] == derbyName);
-
-  responseJson.data.embeds = [derbyConfig.infoEmbed];
-
-  // Gets the next Tuesday's date
-  // https://stackoverflow.com/questions/33078406/getting-the-date-of-next-monday
-  const d = new Date();
-  d.setDate(d.getDate() + (2 + 7 - d.getDay()) % 7);
-  responseJson.data.embeds[0].title += ' - ' + d.toDateString();
+  const subcommandModule = await loadModule(requestJSON.data.options[0].name, 'blossomderby/subcommands/');
+  const executeResponse = await subcommandModule.execute(requestJSON, lambdaEvent, lambdaContext);
+  console.log(JSON.stringify(executeResponse));
 
   return responseJson;
 }
