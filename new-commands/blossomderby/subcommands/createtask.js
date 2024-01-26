@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { sendPayloadToDiscord } from '../../utilities.js';
+import { readJSONFile, sendRequestEmbed } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -19,20 +19,19 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
-  const requestEmbed = commandMetadata.config.createtask.requestEmbed;
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
   const _applicationId = requestJSON.application_id;
   const _requestToken = requestJSON.token;
 
   // Build embed for the request channel
-  const postEmbedRequestJSON = await sendRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
+  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
 
   return responseJson;
 }
 
-async function sendRequestEmbed(requestJSON, guildMember, requestHelpMessageObject) {
-  const { default: serverConfig } = await import('../../serverConfig.json', { with: { type: 'json' }});
+async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject) {
+  const serverConfig = await readJSONFile('./serverConfig.json');
 
   // Get the JSON for the specific command
   const taskOptions = requestJSON.data.options[0];
@@ -41,22 +40,18 @@ async function sendRequestEmbed(requestJSON, guildMember, requestHelpMessageObje
 
   // If the specific choice channel is specified, then use that channel.  If not, use all.
   const targetChannel = serverConfig[requestJSON.guild_id].requestChannels.helptask || serverConfig[requestJSON.guild_id].requestChannels.all;
-  const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
-  const messageComponents = {
-    'embeds': [
-      {
-        'title': `${requestHelpMessageObject.title} - ${taskName}`,
-        'description': `${requestHelpMessageObject.description}`,
-        'color': 0x00f721,
-        'footer': {
-          'text': `Requested by ${guildMember}`,
-        },
-      },
-    ],
+  const embedColor = serverConfig[requestJSON.guild_id].colors.requestOpen || 0;
+
+  const embedObject = {
+    'title': `${requestHelpMessageObject.title} - ${taskName}`,
+    'description': `${requestHelpMessageObject.description}`,
+    'color': embedColor,
+    'footer': {
+      'text': `Requested by ${guildMember}`,
+    },
   };
 
-  console.log('Sending post embed: ' + JSON.stringify(messageComponents));
-  const postEmbedRequestJSON = await sendPayloadToDiscord(url, messageComponents);
+  const postEmbedRequestJSON = await sendRequestEmbed(targetChannel, embedObject);
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;

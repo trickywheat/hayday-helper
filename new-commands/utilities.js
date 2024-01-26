@@ -2,7 +2,7 @@ import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { discordConstants } from './discordConsts.js';
 
 import { fileURLToPath } from 'node:url';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -106,4 +106,27 @@ export async function loadModule(targetCommand, baseDir = '') {
   console.log('Loaded: ' + filePath + ': (TYPE: ' + command.discordSlashMetadata.type + ') ' + command.discordSlashMetadata.description);
 
   return command;
+}
+
+export async function readJSONFile(filename) {
+  const pathToFile = join(__dirname + '/' + filename);
+  const data = readFileSync(pathToFile);
+  return JSON.parse(data);
+}
+
+export async function sendRequestEmbed(targetChannel, embedObject) {
+  const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
+  const messageComponents = {
+    'embeds': [
+      {
+        ...embedObject,
+      },
+    ],
+  };
+
+  console.log('Sending post embed: ' + JSON.stringify(messageComponents));
+  const postEmbedRequestJSON = await sendPayloadToDiscord(url, messageComponents);
+  console.log(postEmbedRequestJSON);
+
+  return postEmbedRequestJSON;
 }
