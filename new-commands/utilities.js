@@ -124,7 +124,8 @@ export async function sendRequestEmbed(targetChannel, { embedObject, componentOb
     ],
   };
 
-  if (Object.prototype.hasOwnProperty.call(componentObject, 'type'))
+  if (Array.isArray(componentObject)) messageComponents.components = componentObject;
+  else if (Object.prototype.hasOwnProperty.call(componentObject, 'type'))
     messageComponents.components = [ componentObject ];
 
   console.log('Sending post embed: ' + JSON.stringify(messageComponents));

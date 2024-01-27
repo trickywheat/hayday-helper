@@ -80,23 +80,45 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
     'color': embedColor,
   };
 
-  const componentObject = {
-    'type': discordConstants.componentType.ACTION_ROW,
-    'components': [
-      {
-        'type': discordConstants.componentType.BUTTON,
-        'style': discordConstants.buttonStyle.PRIMARY,
-        'label': '400 Points!',
-        'custom_id': 'blossomderby-400',
-      },
-      {
-        'type': discordConstants.componentType.BUTTON,
-        'style': discordConstants.buttonStyle.DANGER,
-        'label': 'Give 2-Hour Warning',
-        'custom_id': 'blossomderby-finalwarning',
-      },
-    ],
-  };
+  const componentObject = [
+    {
+      'type': discordConstants.componentType.ACTION_ROW,
+      'components': [
+        {
+          'type': discordConstants.componentType.BUTTON,
+          'style': discordConstants.buttonStyle.PRIMARY,
+          'custom_id': 'blossomderby.togglemember',
+          'emoji': {
+            'id': null,
+            'name': '🌸',
+          },
+        },
+      ],
+    },
+    {
+      'type': discordConstants.componentType.ACTION_ROW,
+      'components': [
+        {
+          'type': discordConstants.componentType.BUTTON,
+          'style': discordConstants.buttonStyle.PRIMARY,
+          'label': '400 Points!',
+          'custom_id': 'blossomderby.400points',
+        },
+        {
+          'type': discordConstants.componentType.BUTTON,
+          'style': discordConstants.buttonStyle.SECONDARY,
+          'label': 'Add Second Task',
+          'custom_id': 'blossomderby.secondtask',
+        },
+        {
+          'type': discordConstants.componentType.BUTTON,
+          'style': discordConstants.buttonStyle.DANGER,
+          'label': 'Give Final Warning',
+          'custom_id': 'blossomderby.finalwarning',
+        },
+      ],
+    },
+  ];
 
   const threadEmbedJSON = await sendRequestEmbed(createThreadRequestJSON.id, { embedObject, componentObject });
 
