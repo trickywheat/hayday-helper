@@ -169,3 +169,13 @@ export async function resolveDeferredToken(applicationId, requestToken, message)
 
   return payloadResponse;
 }
+
+export async function addReaction(channelId, messageId, emoji) {
+  const encodedEmoji = (emoji.includes(':') ? emoji : encodeURI(emoji));
+  const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}/reactions/${encodedEmoji}/@me`;
+
+  console.log('Reacting to message with emoji');
+  const payloadResponse = await sendPayloadToDiscord(url, {}, 'put');
+
+  return payloadResponse;
+}

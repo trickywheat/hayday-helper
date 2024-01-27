@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
+import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken, addReaction } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -22,7 +22,7 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
   const applicationId = requestJSON.application_id;
-  const _requestToken = requestJSON.token;
+  const requestToken = requestJSON.token;
 
   // Build embed for the request channel
   const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
@@ -36,7 +36,9 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
   const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed);
 
-  await resolveDeferredToken(applicationId, _requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
+  await addReaction(initialThreadMessageJSON.channel_id, initialThreadMessageJSON.id, '🌸');
+
+  await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
 }
@@ -100,3 +102,4 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
 
   return threadEmbedJSON;
 }
+
