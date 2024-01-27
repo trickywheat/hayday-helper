@@ -114,7 +114,7 @@ export async function readJSONFile(filename) {
   return JSON.parse(data);
 }
 
-export async function sendRequestEmbed(targetChannel, embedObject) {
+export async function sendRequestEmbed(targetChannel, { embedObject, componentObject = {} }) {
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
   const messageComponents = {
     'embeds': [
@@ -124,9 +124,48 @@ export async function sendRequestEmbed(targetChannel, embedObject) {
     ],
   };
 
+  if (Object.prototype.hasOwnProperty.call(componentObject, 'type'))
+    messageComponents.components = [ componentObject ];
+
   console.log('Sending post embed: ' + JSON.stringify(messageComponents));
   const postEmbedRequestJSON = await sendPayloadToDiscord(url, messageComponents);
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
+}
+
+export async function createThread(channelId, starterMessageId, threadName) {
+  const url = `https://discord.com/api/v10/channels/${channelId}/messages/${starterMessageId}/threads`;
+  const threadDetails = {
+    'name': threadName,
+  };
+
+  console.log('Sending thread request...');
+  const startThreadRequestJSON = await sendPayloadToDiscord(url, threadDetails);
+  console.log('Thread request response: ' + JSON.stringify(startThreadRequestJSON));
+
+  return startThreadRequestJSON;
+}
+
+export async function inviteGuildMemberToThread(channelId, guildMemberId) {
+  const url = `https://discord.com/api/v10/channels/${channelId}/thread-members/${guildMemberId}`;
+
+  console.log('Inviting GuildMember to Thread...');
+  const payloadResponse = await sendPayloadToDiscord(url, {}, 'put');
+
+  // should return status 204
+  return payloadResponse;
+}
+
+export async function resolveDeferredToken(applicationId, requestToken, message) {
+  const url = `https://discord.com/api/v10/webhooks/${applicationId}/${requestToken}`;
+
+  const payloadBody = {
+    'content': message,
+  };
+
+  console.log('Giving the official 200 OK to the temporary message sent when modal was submitted...');
+  const payloadResponse = await sendPayloadToDiscord(url, payloadBody);
+
+  return payloadResponse;
 }

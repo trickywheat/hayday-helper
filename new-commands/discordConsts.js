@@ -19,6 +19,25 @@ export const discordConstants = {
     'NUMBER': 10,
     'ATTACHMENT': 12,
   },
+  // https://discord.com/developers/docs/interactions/message-components#component-object
+  'componentType': {
+    'ACTION_ROW': 1,
+    'BUTTON': 2,
+    'STRING_SELECT': 3,
+    'TEXT_INPUT': 4,
+    'USER_SELECT': 5,
+    'ROLE_SELECT': 6,
+    'MENTIONABLE_SELECT': 7,
+    'CHANNEL_SELECT': 8,
+  },
+  // https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
+  'buttonStyle': {
+    'PRIMARY': 1,
+    'SECONDARY': 2,
+    'SUCCESS': 3,
+    'DANGER': 4,
+    'LINK': 5,
+  },
   // https://discord.com/developers/docs/interactions/receiving-and-responding#responding-to-an-interaction
   'responseInteractionType': {
     'PING': 1,

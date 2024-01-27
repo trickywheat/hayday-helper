@@ -1,14 +1,14 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendRequestEmbed } from '../../utilities.js';
+import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
   'type': 'SUB_COMMAND',
   'description': 'Create Blossom Derby-focused tasks.',
-}
+};
 
-export async function execute(requestJSON, lambdaEvent, lambdaContext) {
+export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   console.log('blossomderby.createtask - execute');
   // Ephemeral message -- viewable by invoker only
   const responseJson = {
@@ -21,11 +21,22 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
 
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
-  const _applicationId = requestJSON.application_id;
+  const applicationId = requestJSON.application_id;
   const _requestToken = requestJSON.token;
 
   // Build embed for the request channel
   const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
+
+  // Create the Thread
+  const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
+
+  await inviteGuildMemberToThread(postEmbedRequestJSON.channel_id, requestJSON.member.user.id);
+
+  // Build the embed for the thread
+  const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
+  const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed);
+
+  await resolveDeferredToken(applicationId, _requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
 }
@@ -51,9 +62,41 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
     },
   };
 
-  const postEmbedRequestJSON = await sendRequestEmbed(targetChannel, embedObject);
+  const postEmbedRequestJSON = await sendRequestEmbed(targetChannel, { embedObject });
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
 }
 
+async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
+  // light pink from the blossom flower
+  const embedColor = 15833771;
+
+  const embedObject = {
+    'title': threadEmbed.title,
+    'description': threadEmbed.description,
+    'color': embedColor,
+  };
+
+  const componentObject = {
+    'type': discordConstants.componentType.ACTION_ROW,
+    'components': [
+      {
+        'type': discordConstants.componentType.BUTTON,
+        'style': discordConstants.buttonStyle.PRIMARY,
+        'label': '400 Points!',
+        'custom_id': 'blossomderby-400',
+      },
+      {
+        'type': discordConstants.componentType.BUTTON,
+        'style': discordConstants.buttonStyle.DANGER,
+        'label': 'Give 2-Hour Warning',
+        'custom_id': 'blossomderby-finalwarning',
+      },
+    ],
+  };
+
+  const threadEmbedJSON = await sendRequestEmbed(createThreadRequestJSON.id, { embedObject, componentObject });
+
+  return threadEmbedJSON;
+}
