@@ -30,7 +30,7 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
 
-  await inviteGuildMemberToThread(postEmbedRequestJSON.channel_id, requestJSON.member.user.id);
+  await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
 
   // Build the embed for the thread
   const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
