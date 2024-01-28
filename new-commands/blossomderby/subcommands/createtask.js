@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken, addReaction } from '../../utilities.js';
+import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
