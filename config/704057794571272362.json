@@ -1,0 +1,37 @@
+{
+  "panelChannel": "1015979293412696064",
+  "requestMeta": {
+    "embeds": [{
+      "title": "Got a request for the neighborhood?",
+      "description": "Tell us what you need and we'll do our best to help you."
+    }]
+  },
+  "requestTypes": [
+    {
+      "targetChannel": "1025198023761989673",
+      "label": "Rares",
+      "value": "rares",
+      "description": "Need some wheat?  Maybe a few blankets?",
+      "placeholder": "I am looking for planks and will trade nails.",
+      "emoji": {
+        "id": "1019364861718823042",
+        "name": "Bolt"
+      }
+    },
+    {
+      "targetChannel": "1025198053189238794",
+      "label": "General Request",
+      "value": "generalrequest",
+      "description": "Need some wheat?  Maybe a few blankets?  Or anything else not listed.",
+      "placeholder": "I need potatoes for my boat.",
+      "emoji": {
+        "id": "1019365780866998373",
+        "name": "MrWicker"
+      }
+    }
+  ],
+  "colors": {
+    "requestOpen": 63265,
+    "requestClose": 12007737
+  }
+}

@@ -112,6 +112,7 @@ export async function loadModule(targetCommand, baseDir = '') {
 
 export async function readJSONFile(filename) {
   const pathToFile = join(__basedir, filename);
+  console.log(`readJSONFile: Reading ${pathToFile}`);
   const data = readFileSync(pathToFile);
   return JSON.parse(data);
 }
@@ -119,13 +120,10 @@ export async function readJSONFile(filename) {
 export async function sendRequestEmbed(targetChannel, { embedObject, componentObject = {} }) {
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
   const messageComponents = {
-    'embeds': [
-      {
-        ...embedObject,
-      },
-    ],
+    'embeds': (Array.isArray(embedObject) ? [ ...embedObject] : [{ ...embedObject }]),
   };
 
+  // components can't be destructured since it may not always be provided
   if (Array.isArray(componentObject)) messageComponents.components = componentObject;
   else if (Object.prototype.hasOwnProperty.call(componentObject, 'type'))
     messageComponents.components = [ componentObject ];

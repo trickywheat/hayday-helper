@@ -1,15 +1,19 @@
 {
   "cSpell.words": [
     "blossomderby",
+    "buildrequestmenu",
     "Consts",
     "createtask",
     "deletethread",
     "derbytaskrequest",
     "finalwarning",
+    "generalrequest",
     "hayday",
     "helptask",
     "pingderby",
     "secondtask",
-    "tasktitle"
+    "targetchannel",
+    "tasktitle",
+    "togglemember"
   ]
 }
