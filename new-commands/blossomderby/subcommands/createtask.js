@@ -36,8 +36,6 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
   const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed);
 
-  await addReaction(initialThreadMessageJSON.channel_id, initialThreadMessageJSON.id, '🌸');
-
   await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
