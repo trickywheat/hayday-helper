@@ -29,7 +29,6 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
-  console.log('serverConfig: ' + JSON.stringify(serverConfig));
   const { embeds: embedObject } = { ...serverConfig.requestMeta };
   const componentObject = [
     {

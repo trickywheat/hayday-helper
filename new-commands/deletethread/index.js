@@ -50,14 +50,14 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 }
 
 async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
-  const serverConfig = await readJSONFile('./new-commands/serverConfig.json');
-  const { embeds: messageEmbed } = messageContentsJSON;
+  const { channel_id: channelId, id: messageId, embeds: messageEmbed, thread: { guild_id: guildId } } = messageContentsJSON;
+  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
   messageEmbed[0].title += ' -- FULFILLED!';
-  messageEmbed[0].color = serverConfig[messageContentsJSON.thread.guild_id].colors.requestClose || 0;
+  messageEmbed[0].color = serverConfig.colors.requestClose || 0;
   messageEmbed[0].footer.text += ' -- Thread closed by ' + guildMember;
 
-  const url = `https://discord.com/api/v10/channels/${messageContentsJSON.channel_id}/messages/${messageContentsJSON.id}`;
+  const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;
 
   const payloadJSON = {
     'embeds': messageEmbed,
