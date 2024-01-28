@@ -44,7 +44,7 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
 }
 
 async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject) {
-  const serverConfig = await readJSONFile('./serverConfig.json');
+  const serverConfig = await readJSONFile('./new-commands/serverConfig.json');
 
   // Get the JSON for the specific command
   const taskOptions = requestJSON.data.options[0];
