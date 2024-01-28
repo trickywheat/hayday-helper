@@ -44,7 +44,8 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
 }
 
 async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject) {
-  const serverConfig = await readJSONFile('./new-commands/serverConfig.json');
+  const { guild_id: guildId } = requestJSON;
+  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
   // Get the JSON for the specific command
   const taskOptions = requestJSON.data.options[0];
@@ -52,8 +53,9 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
   const taskName = taskOptions.options.find((i) => i.name == 'tasktitle').value;
 
   // If the specific choice channel is specified, then use that channel.  If not, use all.
-  const targetChannel = serverConfig[requestJSON.guild_id].requestChannels.helptask || serverConfig[requestJSON.guild_id].requestChannels.all;
-  const embedColor = serverConfig[requestJSON.guild_id].colors.requestOpen || 0;
+  const requestTypeObject = serverConfig.requestTypes.find((i) => i.value == 'helptask') || serverConfig.requestTypes.find((i) => i.value == 'generalrequest');
+  const targetChannel = (requestTypeObject ? requestTypeObject.targetChannel : null);
+  const embedColor = serverConfig.colors.requestOpen || 0;
 
   const embedObject = {
     'title': `${requestHelpMessageObject.title} - ${taskName}`,
