@@ -19,6 +19,10 @@ export const discordConstants = {
     'NUMBER': 10,
     'ATTACHMENT': 12,
   },
+  // https://discord.com/developers/docs/resources/channel#channel-object-channel-types
+  'channelTypes': {
+    'PUBLIC_THREAD': 11,
+  },
   // https://discord.com/developers/docs/interactions/message-components#component-object
   'componentType': {
     'ACTION_ROW': 1,

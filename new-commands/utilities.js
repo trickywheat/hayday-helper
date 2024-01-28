@@ -52,7 +52,7 @@ export async function invokeLambda(lambdaEvent, lambdaContext) {
 
 export async function sendPayloadToDiscord(url, body, method = 'post') {
   const payloadJSON = {
-    'method': method,
+    'method': method.toUpperCase(),
     'headers': {
       'Accept': '*/*',
     },
@@ -67,7 +67,7 @@ export async function sendPayloadToDiscord(url, body, method = 'post') {
   if (url.indexOf(process.env.DISCORD_BOT_APP_ID) == -1)
     payloadJSON.headers['Authorization'] = `Bot ${process.env.DISCORD_BOT_TOKEN}`;
 
-  console.log('Sending to url: ' + method + ' ' + url);
+  console.log('Sending to url: ' + method.toUpperCase() + ' ' + url);
   console.log('Sending payload to Discord: ' + JSON.stringify(payloadJSON));
   const payloadResponse = await fetch(url, payloadJSON);
   console.log('Payload Response: ' + JSON.stringify(payloadResponse.headers.get('content-type')));
@@ -79,6 +79,7 @@ export async function sendPayloadToDiscord(url, body, method = 'post') {
     payloadResponseJSON = {
       'status': payloadResponse.status,
       'statusText': payloadResponse.statusText,
+      'body': await payloadResponse.text(),
     };
   }
   console.log('Discord reply: ' + JSON.stringify(payloadResponseJSON));
@@ -179,4 +180,29 @@ export async function addReaction(channelId, messageId, emoji) {
   const payloadResponse = await sendPayloadToDiscord(url, {}, 'put');
 
   return payloadResponse;
+}
+
+export async function getChannelInformation(channelId) {
+  // Get thread info
+  const url = `https://discord.com/api/v10/channels/${channelId}`;
+  console.log('Getting channel information for threadId: ' + channelId);
+  const channelInfoJSON = await sendPayloadToDiscord(url, {}, 'get');
+
+  return channelInfoJSON;
+}
+
+export async function getRequestMessageContents(parentId, channelId) {
+  const url = `https://discord.com/api/v10/channels/${parentId}/messages/${channelId}`;
+  console.log('Getting message contents for initial embed...');
+  const messageContentsJSON = await sendPayloadToDiscord(url, {}, 'get');
+
+  return messageContentsJSON;
+}
+
+export async function deleteThread(channelId) {
+  const url = `https://discord.com/api/v10/channels/${channelId}`;
+
+  const deleteResponse = await sendPayloadToDiscord(url, {}, 'delete');
+
+  return deleteResponse;
 }
