@@ -53,6 +53,11 @@ export const discordConstants = {
     'MODAL': 9,
     'PREMIUM_REQUIRED': 10,
   },
+  // https://discord.com/developers/docs/interactions/message-components#text-input-object-text-input-styles
+  'modalTextInputStyle': {
+    'SHORT': 1,
+    'PARAGRAPH': 2,
+  },
   // https://discord.com/developers/docs/resources/channel#message-object-message-flags
   'messageFlags': {
     'EPHEMERAL': 1 << 6,
