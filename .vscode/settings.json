@@ -4,6 +4,7 @@
     "Consts",
     "createtask",
     "deletethread",
+    "derbytaskrequest",
     "finalwarning",
     "hayday",
     "helptask",

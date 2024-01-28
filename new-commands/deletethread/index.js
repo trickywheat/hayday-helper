@@ -50,7 +50,7 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 }
 
 async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
-  const serverConfig = await readJSONFile('./serverConfig.json');
+  const serverConfig = await readJSONFile('./new-commands/serverConfig.json');
   const { embeds: messageEmbed } = messageContentsJSON;
 
   messageEmbed[0].title += ' -- FULFILLED!';

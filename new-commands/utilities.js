@@ -3,10 +3,11 @@ import { discordConstants } from './discordConsts.js';
 
 import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const __basedir = resolve(__dirname, '../');
 
 export async function invokeLambda(lambdaEvent, lambdaContext) {
   const responseJson = {
@@ -110,7 +111,7 @@ export async function loadModule(targetCommand, baseDir = '') {
 }
 
 export async function readJSONFile(filename) {
-  const pathToFile = join(__dirname + '/' + filename);
+  const pathToFile = join(__basedir, filename);
   const data = readFileSync(pathToFile);
   return JSON.parse(data);
 }
