@@ -3,6 +3,8 @@
   Type: CHAT_INPUT
 */
 import { discordConstants } from './discordConsts.js';
+import { installSlashCommand } from './installSlashCommands.js';
+import { readJSONFile } from './utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'about',
@@ -11,7 +13,7 @@ export const discordSlashMetadata = {
 };
 
 export async function execute(_requestJSON, lambdaEvent) {
-  const { default: npmPackage } = await import('../package.json', { with: { type: 'json' }});
+  const npmPackage = await readJSONFile('../package.json');
   const npmVersion = process.env.npm_package_version || npmPackage.version || 'undefined';
   // "1.5.0+build.5-commit.57cffe2ecb84cc0a644b76a4d9a4b17e0769abbb"
 
@@ -59,4 +61,15 @@ export async function execute(_requestJSON, lambdaEvent) {
   };
 
   return responseJson;
+}
+
+export async function install() {
+  const discordResponse = await installSlashCommand(discordSlashMetadata.commandMetadata);
+  console.log(discordResponse);
+}
+
+if (process.env.INSTALL_COMMAND) {
+  install().then(() => {
+    console.log(`Command ${discordSlashMetadata.name} installed.`);
+  });
 }

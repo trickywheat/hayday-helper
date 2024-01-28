@@ -67,3 +67,14 @@ async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
   const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
   return editMessageResponseJSON;
 }
+
+export async function install() {
+  const discordResponse = await installSlashCommand(discordSlashMetadata.commandMetadata);
+  console.log(discordResponse);
+}
+
+if (process.env.INSTALL_COMMAND) {
+  install().then(() => {
+    console.log(`Command ${discordSlashMetadata.name} installed.`);
+  });
+}

@@ -38,6 +38,6 @@ export async function install() {
 
 if (process.env.INSTALL_COMMAND) {
   install().then(() => {
-    console.log('Done.');
+    console.log(`Command ${discordSlashMetadata.name} installed.`);
   });
 }
