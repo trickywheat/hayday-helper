@@ -1,7 +1,7 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
-import { installSlashCommand } from '../installSlashCommands.js';
-import { createThread, inviteGuildMemberToThread, invokeLambda, loadModule, readJSONFile, sendMessage } from '../utilities.js';
+// import { installSlashCommand } from '../installSlashCommands.js';
+import { createThread, inviteGuildMemberToThread, invokeLambda, readJSONFile, sendMessage, resolveDeferredToken } from '../utilities.js';
 
 export { discordSlashMetadata };
 
@@ -24,14 +24,12 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
-  const { application_id: applicationId, token: requestToken, build_id: guildId } = requestJSON;
+  const { application_id: applicationId, token: requestToken, guild_id: guildId } = requestJSON;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
   const requestType = requestJSON.data.components[0].components[0].custom_id.split('.')[1];
   const requestHelpMessage = requestJSON.data.components[0].components[0].value;
 
-  // Let's try to find the Label from requestType
-  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
-  const requestHelpConfig = serverConfig.requestTypes.find(i => i.value == requestType);
+  const requestHelpConfig = await getRequestTypeConfig(guildId, requestType);
 
   // Build embed for the request channel
   const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpConfig, requestHelpMessage);
@@ -49,38 +47,48 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
   return responseJson;
 }
 
+async function getRequestTypeConfig(guildId, requestType) {
+  // Let's try to find the Label from requestType
+  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
+  const requestHelpConfig = { ...serverConfig.requestTypes.find(i => i.value == requestType) };
+
+  const configFields = ['targetChannel', 'label', 'value', 'description', 'placeholder', 'emoji', 'colors', 'initialThreadMessage'];
+
+  const returnObject = {};
+  configFields.forEach(i => {
+    returnObject[i] = requestHelpConfig[i] || serverConfig.requestMeta[i];
+  });
+
+  return returnObject;
+}
+
 
 async function buildRequestEmbed(requestJSON, guildMember, requestTypeObject, requestHelpMessage) {
-  const { guild_id: guildId } = requestJSON;
-  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
-
   const targetChannel = requestTypeObject.targetChannel;
-  const embedColor = serverConfig.requestMeta.colors.requestOpen || 0;
+  const embedColor = requestTypeObject?.colors?.requestOpen || 0;
 
-  const embedObject = {
-    'title': `Request: ${requestTypeObject.label}`,
-    'description': requestHelpMessage,
-    'color': embedColor,
-    'footer': {
-      'text': `Requested by ${guildMember}`,
-    },
+  const messageObject = {
+    'embeds': [{
+      'title': `Request: ${requestTypeObject.label}`,
+      'description': requestHelpMessage,
+      'color': embedColor,
+      'footer': {
+        'text': `Requested by ${guildMember}`,
+      },
+    }],
   };
 
-  const postEmbedRequestJSON = await sendMessage(targetChannel, { embedObject });
+  const postEmbedRequestJSON = await sendMessage(targetChannel, messageObject);
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
 }
 
 async function sendInitialThreadMessage(createThreadRequestJSON, requestHelpConfig) {
-  const embedColor = 15833771;
-
-  const messageComponents = {
+  const messageObject = {
     'content': requestHelpConfig.initialThreadMessage,
-  };
-
-  const componentObject = [
-    {
+    'embeds': requestHelpConfig.embeds,
+    'components': [{
       'type': discordConstants.componentType.ACTION_ROW,
       'components': [
         {
@@ -90,10 +98,10 @@ async function sendInitialThreadMessage(createThreadRequestJSON, requestHelpConf
           'custom_id': 'deletethread',
         },
       ],
-    },
-  ];
+    }],
+  };
 
-  const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, { messageComponents, componentObject });
+  const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, messageObject);
 
   return threadEmbedJSON;
 }
