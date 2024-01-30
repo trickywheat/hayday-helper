@@ -1,7 +1,7 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
 import { installSlashCommand } from '../installSlashCommands.js';
-import { deleteThread, getChannelInformation, getRequestMessageContents, invokeLambda, readJSONFile, resolveDeferredToken, sendPayloadToDiscord } from '../utilities.js';
+import { deleteThread, getChannelInformation, getRequestMessageContents, getRequestTypeConfig, invokeLambda, resolveDeferredToken, sendPayloadToDiscord } from '../utilities.js';
 
 export { discordSlashMetadata };
 
@@ -51,10 +51,12 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 
 async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
   const { channel_id: channelId, id: messageId, embeds: messageEmbed, thread: { guild_id: guildId } } = messageContentsJSON;
-  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
+
+  const requestLabel = messageEmbed[0].title.split(':')[1].trim();
+  const requestTypeConfig = await getRequestTypeConfig(guildId, requestLabel);
 
   messageEmbed[0].title += ' -- FULFILLED!';
-  messageEmbed[0].color = serverConfig.requestMeta.colors.requestClose || 0;
+  messageEmbed[0].color = requestTypeConfig?.colors?.requestClose || 0;
   messageEmbed[0].footer.text += ' -- Thread closed by ' + guildMember;
 
   const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;
