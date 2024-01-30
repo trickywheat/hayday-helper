@@ -1,7 +1,7 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
 // import { installSlashCommand } from '../installSlashCommands.js';
-import { createThread, inviteGuildMemberToThread, invokeLambda, readJSONFile, sendMessage, resolveDeferredToken } from '../utilities.js';
+import { createThread, inviteGuildMemberToThread, invokeLambda, getRequestTypeConfig, sendMessage, resolveDeferredToken } from '../utilities.js';
 
 export { discordSlashMetadata };
 
@@ -46,22 +46,6 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 
   return responseJson;
 }
-
-async function getRequestTypeConfig(guildId, requestType) {
-  // Let's try to find the Label from requestType
-  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
-  const requestHelpConfig = { ...serverConfig.requestTypes.find(i => i.value == requestType) };
-
-  const configFields = ['targetChannel', 'label', 'value', 'description', 'placeholder', 'emoji', 'colors', 'initialThreadMessage'];
-
-  const returnObject = {};
-  configFields.forEach(i => {
-    returnObject[i] = requestHelpConfig[i] || serverConfig.requestMeta[i];
-  });
-
-  return returnObject;
-}
-
 
 async function buildRequestEmbed(requestJSON, guildMember, requestTypeObject, requestHelpMessage) {
   const targetChannel = requestTypeObject.targetChannel;
