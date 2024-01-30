@@ -54,7 +54,7 @@ async function editInitialMessageEmbed(messageContentsJSON, guildMember) {
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
   messageEmbed[0].title += ' -- FULFILLED!';
-  messageEmbed[0].color = serverConfig.colors.requestClose || 0;
+  messageEmbed[0].color = serverConfig.requestMeta.colors.requestClose || 0;
   messageEmbed[0].footer.text += ' -- Thread closed by ' + guildMember;
 
   const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;

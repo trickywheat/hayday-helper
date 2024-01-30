@@ -1,7 +1,7 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
 import { installSlashCommand } from '../installSlashCommands.js';
-import { invokeLambda, readJSONFile, resolveDeferredToken, sendRequestEmbed } from '../utilities.js';
+import { invokeLambda, readJSONFile, resolveDeferredToken, sendMessage } from '../utilities.js';
 
 export { discordSlashMetadata };
 
@@ -29,9 +29,9 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
-  const { embeds: embedObject } = { ...serverConfig.requestMeta };
-  const componentObject = [
-    {
+  const messageObject = {
+    embeds: [ ...serverConfig.requestMeta ],
+    components: [{
       'type': discordConstants.componentType.ACTION_ROW,
       'components': [
         {
@@ -40,10 +40,10 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
           'options': [ ...buildMenuItems(serverConfig.requestTypes) ],
         },
       ],
-    },
-  ];
+    }],
+  };
 
-  const discordResponse = await sendRequestEmbed(targetChannel, { embedObject, componentObject });
+  const discordResponse = await sendMessage(targetChannel, messageObject);
 
   const panelLink = (Object.prototype.hasOwnProperty.call(discordResponse, 'id') ? `https://discord.com/channels/${guildId}/${discordResponse.channel_id}/${discordResponse.id}` : null);
 

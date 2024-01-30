@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendRequestEmbed, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
+import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -47,24 +47,25 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
 
   // Get the JSON for the specific command
   const taskOptions = requestJSON.data.options[0];
-  console.log(JSON.stringify(taskOptions));
   const taskName = taskOptions.options.find((i) => i.name == 'tasktitle').value;
 
   // If the specific choice channel is specified, then use that channel.  If not, use all.
   const requestTypeObject = serverConfig.requestTypes.find((i) => i.value == 'helptask') || serverConfig.requestTypes.find((i) => i.value == 'generalrequest');
   const targetChannel = (requestTypeObject ? requestTypeObject.targetChannel : null);
-  const embedColor = serverConfig.colors.requestOpen || 0;
+  const embedColor = serverConfig.requestMeta.colors.requestOpen || 0;
 
-  const embedObject = {
-    'title': `${requestHelpMessageObject.title} - ${taskName}`,
-    'description': `${requestHelpMessageObject.description}`,
-    'color': embedColor,
-    'footer': {
-      'text': `Requested by ${guildMember}`,
-    },
+  const messageObject = {
+    'embeds': [{
+      'title': `${requestHelpMessageObject.title} - ${taskName}`,
+      'description': `${requestHelpMessageObject.description}`,
+      'color': embedColor,
+      'footer': {
+        'text': `Requested by ${guildMember}`,
+      },
+    }],
   };
 
-  const postEmbedRequestJSON = await sendRequestEmbed(targetChannel, { embedObject });
+  const postEmbedRequestJSON = await sendMessage(targetChannel, messageObject);
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
@@ -74,14 +75,13 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
   // light pink from the blossom flower
   const embedColor = 15833771;
 
-  const embedObject = {
-    'title': threadEmbed.title,
-    'description': threadEmbed.description,
-    'color': embedColor,
-  };
-
-  const componentObject = [
-    {
+  const messageObject = {
+    embeds: [{
+      'title': threadEmbed.title,
+      'description': threadEmbed.description,
+      'color': embedColor,
+    }],
+    components: [{
       'type': discordConstants.componentType.ACTION_ROW,
       'components': [
         {
@@ -117,10 +117,10 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
           'custom_id': 'blossomderby.finalwarning',
         },
       ],
-    },
-  ];
+    }],
+  };
 
-  const threadEmbedJSON = await sendRequestEmbed(createThreadRequestJSON.id, { embedObject, componentObject });
+  const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, messageObject);
 
   return threadEmbedJSON;
 }

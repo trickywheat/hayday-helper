@@ -22,7 +22,7 @@ export async function execute(requestJSON) {
           'type': discordConstants.componentType.ACTION_ROW,
           'components': [{
             'type': discordConstants.componentType.TEXT_INPUT,
-            'custom_id': 'requestHelp',
+            'custom_id': ['requestHelp', requestChoice].join('.'),
             'style': discordConstants.modalTextInputStyle.PARAGRAPH,
             'label': 'Try to be descriptive, but brief.',
             'required': true,

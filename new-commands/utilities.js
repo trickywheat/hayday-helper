@@ -117,19 +117,11 @@ export async function readJSONFile(filename) {
   return JSON.parse(data);
 }
 
-export async function sendRequestEmbed(targetChannel, { embedObject, componentObject = {} }) {
+export async function sendMessage(targetChannel, messageObject) {
   const url = `https://discord.com/api/v10/channels/${targetChannel}/messages`;
-  const messageComponents = {
-    'embeds': (Array.isArray(embedObject) ? [ ...embedObject] : [{ ...embedObject }]),
-  };
 
-  // components can't be destructured since it may not always be provided
-  if (Array.isArray(componentObject)) messageComponents.components = componentObject;
-  else if (Object.prototype.hasOwnProperty.call(componentObject, 'type'))
-    messageComponents.components = [ componentObject ];
-
-  console.log('Sending post embed: ' + JSON.stringify(messageComponents));
-  const postEmbedRequestJSON = await sendPayloadToDiscord(url, messageComponents);
+  console.log('Sending message: ' + JSON.stringify(messageObject));
+  const postEmbedRequestJSON = await sendPayloadToDiscord(url, messageObject);
   console.log(postEmbedRequestJSON);
 
   return postEmbedRequestJSON;
