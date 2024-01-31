@@ -24,8 +24,7 @@ export const handler = async (event, context) => {
   let isValidRequest = false;
 
   // If running this with POSTMAN, check headers
-  if (Object.prototype.hasOwnProperty.call(event, 'headers') && Object.prototype.hasOwnProperty.call(event.headers, 'authorization') &&
-     (event.headers.authorization === 'Bearer ' + process.env.POSTMAN_VERIFY)) {
+  if (event?.headers?.authorization === 'Bearer ' + process.env.POSTMAN_VERIFY) {
     isValidRequest = true;
   } else {
     // Get valid information
@@ -45,9 +44,7 @@ export const handler = async (event, context) => {
 
     // Check to see if Discord sent this via POST webhook
     // or if it is a callback
-    if (((Object.prototype.hasOwnProperty.call(event, 'requestContext') && Object.prototype.hasOwnProperty.call(event.requestContext, 'http')) &&
-          ((event.requestContext.http.method === 'POST') && (event.body.length > 1))) ||
-        Object.prototype.hasOwnProperty.call(event, 'callbackExecute')) {
+    if ((event?.requestContext?.http?.method == 'POST' && (event.body.length > 1)) || event.callbackExecute) {
       const requestJSON = JSON.parse(event.body);
       console.log('requestJson: ' + JSON.stringify(requestJSON));
 
@@ -58,7 +55,7 @@ export const handler = async (event, context) => {
 
       // Check to see if a command is being requested
       // is available as a module.
-      } else if (Object.prototype.hasOwnProperty.call(requestJSON.data, 'name') || Object.prototype.hasOwnProperty.call(requestJSON.data, 'custom_id')) {
+      } else if (requestJSON.data?.name || requestJSON.data?.custom_id) {
         let command = requestJSON.data.name || requestJSON.data.custom_id || 'does-not-exist';
         console.log('Discord sent command: ' + command);
 
@@ -78,12 +75,12 @@ export const handler = async (event, context) => {
 
         // If the the command has discordSlashMetadata, then it's a real command.  But make sure we're not executing this
         // more than 3 times.
-        } else if (botCommand.discordSlashMetadata && (event.callbackExecute <= 3)) {
+        } else if (botCommand.discordSlashMetadata && (event.callbackExecute < 3)) {
           console.log('Executing callback module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
 
         // If we're executing this 3 times or more, return an error
-        } else if (event.callbackExecute <= 3) {
+        } else if (event.callbackExecute >= 3) {
           // Ephemeral message -- viewable by invoker only
           const responseBody = {
             'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
