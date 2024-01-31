@@ -4,6 +4,7 @@ const discordSlashMetadata = {
   'name': 'blossomderby',
   'type': discordConstants.applicationCommandType.CHAT_INPUT,
   'description': 'Commands that help manage blossom derby-specific tasks.',
+  'deferred': true,
 };
 
 discordSlashMetadata.commandMetadata = {

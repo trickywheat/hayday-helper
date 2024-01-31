@@ -3,6 +3,8 @@ import { verifyKey } from 'discord-interactions';
 import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { discordConstants } from './new-commands/discordConsts.js';
+import { invokeLambda, loadModule } from './new-commands/utilities.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -66,13 +68,17 @@ export const handler = async (event, context) => {
         // Attempt to load the command that was received.
         // function loadCommand returns an empty object if no such command was found.
         const botCommand = await loadCommand(command);
-        if (Object.prototype.hasOwnProperty.call(botCommand, 'discordSlashMetadata') && Object.prototype.hasOwnProperty.call(event, 'callbackExecute') === false) {
+
+        // if the botCommand is deferred, invoke the lambda and return a deferred message
+        if (botCommand.deferred) {
+          return await invokeLambda(event, context);
+        } else if (botCommand?.discordSlashMetadata && (!event?.callbackExecute)) {
           console.log('Executing command module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.execute(requestJSON, event, context));
 
         // If the the command has discordSlashMetadata, then it's a real command.  But make sure we're not executing this
         // more than 3 times.
-        } else if (Object.prototype.hasOwnProperty.call(botCommand, 'discordSlashMetadata') && (event.callbackExecute <= 3)) {
+        } else if (botCommand.discordSlashMetadata && (event.callbackExecute <= 3)) {
           console.log('Executing callback module for ' + botCommand.discordSlashMetadata.name);
           responseJson.body = JSON.stringify(await botCommand.callbackExecute(requestJSON, event, context));
 
@@ -80,20 +86,20 @@ export const handler = async (event, context) => {
         } else if (event.callbackExecute <= 3) {
           // Ephemeral message -- viewable by invoker only
           const responseBody = {
-            'type': 4,
+            'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
             'data': {
               'content': 'Unable to execute `' + command + '` due to invocation limit.  Request Id: `' + event.requestContext.requestId + '`',
-              'flags': 1 << 6,
+              'flags': discordConstants.messageFlags.EPHEMERAL,
             },
           };
           responseJson.body = JSON.stringify(responseBody);
         } else {
           // Ephemeral message -- viewable by invoker only
           const responseBody = {
-            'type': 4,
+            'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
             'data': {
               'content': 'Command `' + command + '` does not exist.  Request Id: `' + event.requestContext.requestId + '`',
-              'flags': 1 << 6,
+              'flags': discordConstants.messageFlags.EPHEMERAL,
             },
           };
           responseJson.body = JSON.stringify(responseBody);
@@ -107,18 +113,23 @@ export const handler = async (event, context) => {
 };
 
 
-async function loadCommand(targetCommand) {
-  const commandsPath = join(__dirname + '/new-commands');
-  const commandFilename = targetCommand + '.js';
-  const commandFiles = readdirSync(commandsPath).filter(file => file.toLowerCase() === commandFilename.toLowerCase() && file != 'index.js');
+async function loadCommand(targetCommand, callbackExecute = false) {
+  const commandsBasePath = join(__dirname, '/new-commands');
+  const commandMetadataPath = join(commandsBasePath, targetCommand, 'commandMetadata.js');
 
-  let filePath = {};
-  if (commandFiles.length == 1) {
-    filePath = join(commandsPath, commandFiles[0]);
-  } else if (commandFiles.length == 0) {
-    const commandFile = join(commandsPath + '/' + targetCommand + '/index.js');
-    filePath = (existsSync(commandFile) ? commandFile : null);
-  }
+  let filePath = (existsSync(commandMetadataPath) ? commandMetadataPath : null);
+
+  if (!filePath) return {};
+  console.log('Loading METADATA: ' + filePath);
+  let metadata = await import(filePath);
+
+  // if this is not a callbackExecute lambda call, defer it.
+  if (metadata.deferred && (!callbackExecute)) return { 'deferred': true };
+
+  // Free up memory
+  metadata = null;
+  const commandFile = join(commandsBasePath + '/' + targetCommand + '/index.js');
+  filePath = (existsSync(commandFile) ? commandFile : null);
 
   if (filePath == null) return {};
   console.log('Loading: ' + filePath);
