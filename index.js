@@ -57,8 +57,11 @@ export const handler = async (event, context) => {
       // Check to see if a command is being requested
       // is available as a module.
       } else if (Object.prototype.hasOwnProperty.call(requestJSON.data, 'name') || Object.prototype.hasOwnProperty.call(requestJSON.data, 'custom_id')) {
-        const command = requestJSON.data.name || requestJSON.data.custom_id || 'does-not-exist';
+        let command = requestJSON.data.name || requestJSON.data.custom_id || 'does-not-exist';
         console.log('Discord sent command: ' + command);
+
+        if (command.split('.').length > 1)
+          command = command.split('.')[0];
 
         // Attempt to load the command that was received.
         // function loadCommand returns an empty object if no such command was found.

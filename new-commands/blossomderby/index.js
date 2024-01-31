@@ -24,7 +24,13 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
-  const subcommandModule = await loadModule(requestJSON.data.options[0].name, 'blossomderby/subcommands/');
+  let subcommandName = requestJSON?.data?.options?.[0].name || requestJSON.data.name || requestJSON.data.custom_id;
+  if (subcommandName.split('.').length > 1)
+    subcommandName = subcommandName.split('.')[1];
+
+  console.log('blossomderby.callbackExecute - subcommandName: ' + subcommandName);
+
+  const subcommandModule = await loadModule(subcommandName, 'blossomderby/subcommands/');
   const executeResponse = await subcommandModule.execute(requestJSON, lambdaEvent, lambdaContext);
   console.log(JSON.stringify(executeResponse));
 
