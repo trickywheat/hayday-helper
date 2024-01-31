@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken } from '../../utilities.js';
+import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -19,16 +19,17 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
     },
   };
 
+  const { application_id: applicationId, token: requestToken, guild_id: guildId } = requestJSON;
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
-  const applicationId = requestJSON.application_id;
-  const requestToken = requestJSON.token;
 
   // Build embed for the request channel
   const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
 
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
+
+  // const createRoleJSON = await createBlossomDerbyRole(guildId, requestHelpMessageObject)
 
   await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
 
@@ -56,7 +57,7 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
 
   const messageObject = {
     'embeds': [{
-      'title': `${requestHelpMessageObject.title} - ${taskName}`,
+      'title': `${requestHelpMessageObject.title}: ${taskName}`,
       'description': `${requestHelpMessageObject.description}`,
       'color': embedColor,
       'footer': {
@@ -123,5 +124,21 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
   const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, messageObject);
 
   return threadEmbedJSON;
+}
+
+async function createBlossomDerbyRole(guildId, taskName) {
+  const url = `https://discord.com/api/v10/guilds/${guildId}/roles`;
+
+  // Generate random string https://stackoverflow.com/a/8084248
+  const r = (Math.random() + 1).toString(36).substring(6);
+
+  const payloadJSON = {
+    'name': `🌸 ${taskName} - ${r}`,
+    'mentionable': true,
+  };
+
+  console.log('Creating role: ' + JSON.stringify(payloadJSON));
+  const roleResponse = await sendPayloadToDiscord(url, payloadJSON, 'post');
+  return roleResponse;
 }
 
