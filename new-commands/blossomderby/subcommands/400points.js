@@ -8,7 +8,7 @@ export const discordSlashMetadata = {
   'description': 'Create Blossom Derby-focused tasks.',
 };
 
-export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
+export async function execute(requestJSON, lambdaEvent, lambdaContext) {
   console.log('blossomderby.400points - execute');
   // Ephemeral message -- viewable by invoker only
   const responseJson = {
@@ -28,15 +28,17 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   if ((threadChannelInfoJSON.owner_id != process.env.DISCORD_BOT_APP_ID) ||
   (threadChannelInfoJSON.type != discordConstants.channelTypes.PUBLIC_THREAD)) {
     await resolveDeferredToken(applicationId, requestToken, `Unable to modify this thread.  It might be a thread I am not permitted to edit.  If you think you are getting this in error, please tell my developer.  requestId: \`${lambdaContext.awsRequestId}\``);
-  } else {
-    const messageContentsJSON = await getRequestMessageContents(threadChannelInfoJSON.parent_id, threadChannelId);
 
-    // If the message contains embeds and does NOT contain 400, do it.
-    if (messageContentsJSON?.embeds[0].title.includes('400 POINTS!'))
-      await resolveDeferredToken(applicationId, requestToken, 'This task has already been marked with 400 points.');
-    else
-      await editInitialMessageEmbed(messageContentsJSON, guildMember);
+    return responseJson;
   }
+
+  const messageContentsJSON = await getRequestMessageContents(threadChannelInfoJSON.parent_id, threadChannelId);
+
+  // If the message contains embeds and does NOT contain 400, do it.
+  if (messageContentsJSON?.embeds[0].title.includes('400 POINTS!'))
+    await resolveDeferredToken(applicationId, requestToken, 'This task has already been marked with 400 points.');
+  else
+    await editInitialMessageEmbed(messageContentsJSON, guildMember);
 
   // await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
 
