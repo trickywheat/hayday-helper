@@ -55,7 +55,25 @@ async function editInitialMessageEmbed(messageContentsJSON, guildMemberObject) {
   } else {
     queue.value = queue.value.replace(guildMember, '');
     if (queue.value.trim().length == 0) queue.value = '(none)';
-    console.log('queue: ' + queue);
+    console.log('queue: ' + JSON.stringify(queue));
+
+    if (!completed.value.includes(guildMember)) {
+      completed.value = (completed.value == '(none)' ? guildMember : completed.value + '\n' + guildMember);
+    } else {
+      console.log('guildmember detected');
+      const re = new RegExp(`^${guildMember}.*$`, 'm');
+      const matchedLine = completed.value.match(re)[0];
+      console.log('matchedLine: ' + matchedLine);
+
+      const n = matchedLine.match(/\d+/)?.[0];
+      console.log('n: ' + n);
+      const newMemberLine = (!n ? `${matchedLine} (2)` : `${guildMember} (${parseInt(n) + 1})`);
+
+      console.log('newMemberLine: ' + newMemberLine);
+
+      completed.value = completed.value.replace(matchedLine, newMemberLine);
+      console.log('completed: ' + JSON.stringify(completed));
+    }
   }
 
   const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;

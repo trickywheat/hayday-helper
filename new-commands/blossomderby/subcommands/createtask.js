@@ -27,7 +27,7 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   const createRoleJSON = await createBlossomDerbyRole(guildId, taskOptions);
 
   // Build embed for the request channel
-  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, requestHelpMessageObject);
+  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, requestHelpMessageObject, createRoleJSON.id);
 
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
@@ -43,7 +43,7 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   return responseJson;
 }
 
-async function buildRequestEmbed(requestJSON, requestHelpMessageObject) {
+async function buildRequestEmbed(requestJSON, requestHelpMessageObject, roleId) {
   const { guild_id: guildId } = requestJSON;
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
@@ -70,6 +70,9 @@ async function buildRequestEmbed(requestJSON, requestHelpMessageObject) {
           'value': '(none)',
         },
       ],
+      'footer': {
+        'text': `roleId: ${roleId}`,
+      },
     }],
   };
 
@@ -88,9 +91,6 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRole
       'title': threadEmbed.title,
       'description': threadEmbed.description,
       'color': embedColor,
-      'footer': {
-        'text': `roleId: ${createRoleJSON.id}`,
-      },
     }],
     components: [{
       'type': discordConstants.componentType.ACTION_ROW,
