@@ -20,29 +20,30 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   };
 
   const { application_id: applicationId, token: requestToken, guild_id: guildId } = requestJSON;
+  const taskOptions = { ...requestJSON.data.options[0] };
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
-  const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
+
+  // Create the temporary role
+  const createRoleJSON = await createBlossomDerbyRole(guildId, taskOptions);
 
   // Build embed for the request channel
-  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject);
+  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, requestHelpMessageObject);
 
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
-
-  // const createRoleJSON = await createBlossomDerbyRole(guildId, requestHelpMessageObject)
 
   await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
 
   // Build the embed for the thread
   const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
-  const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed);
+  const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRoleJSON);
 
   await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
 }
 
-async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObject) {
+async function buildRequestEmbed(requestJSON, requestHelpMessageObject) {
   const { guild_id: guildId } = requestJSON;
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
@@ -58,11 +59,17 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
   const messageObject = {
     'embeds': [{
       'title': `${requestHelpMessageObject.title}: ${taskName}`,
-      'description': `${requestHelpMessageObject.description}`,
       'color': embedColor,
-      'footer': {
-        'text': `Requested by ${guildMember}`,
-      },
+      'fields': [
+        {
+          'name': 'Queue:',
+          'value': '(none)',
+        },
+        {
+          'name': 'Completed:',
+          'value': '(none)',
+        },
+      ],
     }],
   };
 
@@ -72,7 +79,7 @@ async function buildRequestEmbed(requestJSON, guildMember, requestHelpMessageObj
   return postEmbedRequestJSON;
 }
 
-async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
+async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRoleJSON) {
   // light pink from the blossom flower
   const embedColor = 15833771;
 
@@ -81,6 +88,9 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
       'title': threadEmbed.title,
       'description': threadEmbed.description,
       'color': embedColor,
+      'footer': {
+        'text': `roleId: ${createRoleJSON.id}`,
+      },
     }],
     components: [{
       'type': discordConstants.componentType.ACTION_ROW,
@@ -88,7 +98,7 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
         {
           'type': discordConstants.componentType.BUTTON,
           'style': discordConstants.buttonStyle.PRIMARY,
-          'custom_id': 'blossomderby.togglemember',
+          'custom_id': `blossomderby.togglemember_${createRoleJSON.id}`,
           'emoji': {
             'id': null,
             'name': '🌸',
@@ -126,11 +136,12 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed) {
   return threadEmbedJSON;
 }
 
-async function createBlossomDerbyRole(guildId, taskName) {
+async function createBlossomDerbyRole(guildId, taskOptions) {
   const url = `https://discord.com/api/v10/guilds/${guildId}/roles`;
 
   // Generate random string https://stackoverflow.com/a/8084248
   const r = (Math.random() + 1).toString(36).substring(6);
+  const taskName = taskOptions.options.find((i) => i.name == 'tasktitle').value;
 
   const payloadJSON = {
     'name': `🌸 ${taskName} - ${r}`,

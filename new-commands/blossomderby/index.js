@@ -28,6 +28,9 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
   if (subcommandName.split('.').length > 1)
     subcommandName = subcommandName.split('.')[1];
 
+  if (subcommandName.split('_').length > 1)
+    subcommandName = subcommandName.split('_')[0];
+
   console.log('blossomderby.callbackExecute - subcommandName: ' + subcommandName);
 
   const subcommandModule = await loadModule(subcommandName, 'blossomderby/subcommands/');

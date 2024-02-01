@@ -3,7 +3,7 @@ import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
 import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
 
 export const discordSlashMetadata = {
-  'name': 'blossomderby.createtask',
+  'name': 'blossomderby.400points',
   'type': 'SUB_COMMAND',
   'description': 'Create Blossom Derby-focused tasks.',
 };
