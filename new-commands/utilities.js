@@ -209,3 +209,11 @@ export async function getRequestTypeConfig(guildId, requestType) {
 
   return returnObject;
 }
+
+export async function deleteRole(guildId, roleId) {
+  const url = `https://discord.com/api/v10/guilds/${guildId}/roles/${roleId}`;
+
+  const deleteResponse = await sendPayloadToDiscord(url, {}, 'delete');
+
+  return deleteResponse;
+}

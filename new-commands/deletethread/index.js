@@ -1,7 +1,7 @@
 import { discordConstants } from '../discordConsts.js';
 import { discordSlashMetadata } from './commandMetadata.js';
 import { installSlashCommand } from '../installSlashCommands.js';
-import { deleteThread, getChannelInformation, getRequestMessageContents, getRequestTypeConfig, invokeLambda, resolveDeferredToken, sendPayloadToDiscord } from '../utilities.js';
+import { deleteRole, deleteThread, getChannelInformation, getRequestMessageContents, getRequestTypeConfig, invokeLambda, resolveDeferredToken, sendPayloadToDiscord } from '../utilities.js';
 
 export { discordSlashMetadata };
 
@@ -24,10 +24,8 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
+  const { application_id: applicationId, token: requestToken, channel_id: threadChannelId, guild_id: guildId } = requestJSON;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
-  const threadChannelId = requestJSON.channel_id;
-  const applicationId = requestJSON.application_id;
-  const requestToken = requestJSON.token;
 
   const threadChannelInfoJSON = await getChannelInformation(threadChannelId);
 
@@ -39,8 +37,14 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
     const messageContentsJSON = await getRequestMessageContents(threadChannelInfoJSON.parent_id, threadChannelId);
 
     // If the message contains embeds, it's the initial message sent.  Edit the message
-    if (Object.prototype.hasOwnProperty.call(messageContentsJSON, 'embeds'))
+    if (messageContentsJSON?.embeds) {
+      if (messageContentsJSON.embeds[0]?.footer?.text.includes('roleId:')) {
+        const roleId = messageContentsJSON.embeds[0]?.footer?.text.split(':')[1].trim();
+        await deleteRole(guildId, roleId);
+      }
+
       await editInitialMessageEmbed(messageContentsJSON, guildMember);
+    }
 
     // Finally, delete the thread
     await deleteThread(threadChannelId);

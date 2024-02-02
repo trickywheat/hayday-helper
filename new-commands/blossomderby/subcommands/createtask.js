@@ -155,4 +155,3 @@ async function createBlossomDerbyRole(guildId, taskOptions) {
   const roleResponse = await sendPayloadToDiscord(url, payloadJSON, 'post');
   return roleResponse;
 }
-
