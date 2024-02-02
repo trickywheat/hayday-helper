@@ -91,6 +91,9 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRole
       'title': threadEmbed.title,
       'description': threadEmbed.description,
       'color': embedColor,
+      'footer': {
+        'text': `Blossom Task Role: @${createRoleJSON.name}`,
+      },
     }],
     components: [{
       'type': discordConstants.componentType.ACTION_ROW,
