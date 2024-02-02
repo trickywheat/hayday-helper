@@ -98,7 +98,7 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRole
         {
           'type': discordConstants.componentType.BUTTON,
           'style': discordConstants.buttonStyle.PRIMARY,
-          'custom_id': `blossomderby.togglemember_${createRoleJSON.id}`,
+          'custom_id': `blossomderby.togglemember_${createRoleJSON.id}_cherryblossom`,
           'emoji': {
             'id': null,
             'name': '🌸',
