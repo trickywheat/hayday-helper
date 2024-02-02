@@ -1,6 +1,5 @@
 import { discordConstants } from '../../discordConsts.js';
-import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
+import { inviteGuildMemberToThread, resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.togglemember',
@@ -19,7 +18,7 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
-  const { application_id: applicationId, token: requestToken, channel_id: threadChannelId } = requestJSON;
+  const { application_id: applicationId, token: requestToken, channel_id: threadChannelId, guild_id: guildId } = requestJSON;
   const guildMemberObject = requestJSON.member;
   let subcommandValue = requestJSON?.data?.options?.[0].name || requestJSON.data.name || requestJSON.data.custom_id;
 
@@ -28,7 +27,7 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
   // Remove 'blossomderby.'
   subcommandValue = subcommandValue.split('.')[1];
 
-  const [ subcommandName, roleId, blossomFlower ] = subcommandValue.split('_');
+  const [ , roleId, blossomFlower ] = subcommandValue.split('_');
 
   const threadChannelInfoJSON = await getChannelInformation(threadChannelId);
 
@@ -43,9 +42,19 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
   const messageContentsJSON = await getRequestMessageContents(threadChannelInfoJSON.parent_id, threadChannelId);
   const editMessageResponseJSON = await editInitialMessageEmbed(messageContentsJSON, guildMemberObject, blossomFlower);
 
-  // await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
+  const queue = editMessageResponseJSON.embeds[0].fields.find(i => i.name == 'Queue:');
+  const guildMember = guildMemberObject.nick || guildMemberObject.user.username;
 
-  await resolveDeferredToken(applicationId, requestToken, 'You have been added to the queue!');
+  if (queue.value.includes(guildMember)) {
+    console.log('Inviting to thread and adding role...');
+    await inviteGuildMemberToThread(threadChannelId, guildMemberObject.user.id);
+    await toggleRole('add', guildId, guildMemberObject.user.id, roleId);
+  } else {
+    console.log('Removing role...');
+    await toggleRole('remove', guildId, guildMemberObject.user.id, roleId);
+  }
+
+  await resolveDeferredToken(applicationId, requestToken, 'Task updated.  You may close this message at anytime.');
 
   return responseJson;
 }
@@ -163,4 +172,12 @@ function addToList(queueListText, guildMember, blossomEmoji) {
   }
 
   return returnListText;
+}
+
+async function toggleRole(action, guildId, guildMemberId, roleId) {
+  const url = `https://discord.com/api/v10/guilds/${guildId}/members/${guildMemberId}/roles/${roleId}`;
+  const method = (action == 'add' ? 'put' : 'delete');
+
+  const discordResponse = await sendPayloadToDiscord(url, {}, method);
+  return discordResponse;
 }
