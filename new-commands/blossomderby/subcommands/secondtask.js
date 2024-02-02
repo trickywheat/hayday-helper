@@ -1,14 +1,16 @@
 import { discordConstants } from '../../discordConsts.js';
 import { resolveDeferredToken, sendPayloadToDiscord } from '../../utilities.js';
 
-export const discordSlashMetadata = {
-  'name': 'blossomderby.400points',
+const discordSlashMetadata = {
+  'name': 'blossomderby.secondtask',
   'type': 'SUB_COMMAND',
   'description': 'Create Blossom Derby-focused tasks.',
 };
 
+export { discordSlashMetadata };
+
 export async function execute(requestJSON, lambdaEvent) {
-  console.log('blossomderby.secondtask - execute');
+  console.log(discordSlashMetadata.name + ' - execute');
   // Ephemeral message -- viewable by invoker only
   const responseJson = {
     'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -34,7 +36,7 @@ export async function execute(requestJSON, lambdaEvent) {
 
   // disable the secondtask button
   updatedMessageObject.components[1].components = messageContentsJSON.components[1].components.map((i) => {
-    if (i.custom_id == 'blossomderby.secondtask') i.disabled = true;
+    if (i.custom_id == discordSlashMetadata.name) i.disabled = true;
     return i;
   });
 

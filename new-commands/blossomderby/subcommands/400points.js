@@ -1,15 +1,16 @@
 import { discordConstants } from '../../discordConsts.js';
-import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
+import { resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
 
-export const discordSlashMetadata = {
+const discordSlashMetadata = {
   'name': 'blossomderby.400points',
   'type': 'SUB_COMMAND',
   'description': 'Create Blossom Derby-focused tasks.',
 };
 
+export { discordSlashMetadata };
+
 export async function execute(requestJSON, lambdaEvent, lambdaContext) {
-  console.log('blossomderby.400points - execute');
+  console.log(discordSlashMetadata.name + ' - execute');
   // Ephemeral message -- viewable by invoker only
   const responseJson = {
     'type': discordConstants.responseInteractionType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -40,9 +41,9 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
   else
     await editInitialMessageEmbed(messageContentsJSON, guildMember);
 
-  // await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
+  await disableButton(requestJSON.message, discordSlashMetadata.name);
 
-  // await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
+  await resolveDeferredToken(applicationId, requestToken, 'Task updated.  You may close this message at anytime.');
 
   return responseJson;
 }
@@ -61,4 +62,26 @@ async function editInitialMessageEmbed(messageContentsJSON) {
   console.log('Send edited initial embedded message...');
   const editMessageResponseJSON = await sendPayloadToDiscord(url, payloadJSON, 'patch');
   return editMessageResponseJSON;
+}
+
+async function disableButton(messageContentsJSON, customIdToDisable) {
+  const { id: messageId, channel_id: channelId } = messageContentsJSON;
+
+  const updatedMessageObject = {
+    'components': [ ...messageContentsJSON.components ],
+    'embeds': [ ...messageContentsJSON.embeds ],
+  };
+
+  // disable the secondtask button
+  updatedMessageObject.components[1].components = messageContentsJSON.components[1].components.map((i) => {
+    if (i.custom_id == customIdToDisable) i.disabled = true;
+    return i;
+  });
+
+  const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;
+
+  console.log(`Send message with ${customIdToDisable} button: ` + JSON.stringify(updatedMessageObject));
+  const discordResponse = await sendPayloadToDiscord(url, updatedMessageObject, 'patch');
+
+  return discordResponse;
 }
