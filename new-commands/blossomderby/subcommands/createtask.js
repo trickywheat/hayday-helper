@@ -127,8 +127,8 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRole
         {
           'type': discordConstants.componentType.BUTTON,
           'style': discordConstants.buttonStyle.DANGER,
-          'label': 'Give Final Warning',
-          'custom_id': 'blossomderby.finalwarning',
+          'label': 'Delete Thread',
+          'custom_id': 'deletethread',
         },
       ],
     }],
