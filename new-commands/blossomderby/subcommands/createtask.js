@@ -1,4 +1,4 @@
-sendPayloadToDiscord()import { discordConstants } from '../../discordConsts.js';
+import { discordConstants } from '../../discordConsts.js';
 import { sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord, getRequestTypeConfig } from '../../utilities.js';
 
 export const discordSlashMetadata = {
