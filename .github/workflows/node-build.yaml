@@ -19,6 +19,7 @@ jobs:
         node-version: [20]
 
     name: Node ${{ matrix.node-version }} build
+    if: ${{ github.ref == 'This workflow is disabled' }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4

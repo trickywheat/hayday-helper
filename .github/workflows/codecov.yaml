@@ -7,7 +7,8 @@ on:
       - '**.js'
   push:
     branches:
-      - 'test-*'
+      - 'run-unit-tests'
+      - 'write-unit-tests'
 
 defaults:
   run:
