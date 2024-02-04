@@ -1,6 +1,5 @@
-import { discordConstants } from '../../discordConsts.js';
-import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord, getRequestTypeConfig } from '../../utilities.js';
+sendPayloadToDiscord()import { discordConstants } from '../../discordConsts.js';
+import { sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord, getRequestTypeConfig } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -21,7 +20,6 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
 
   const { application_id: applicationId, token: requestToken, guild_id: guildId } = requestJSON;
   const taskOptions = { ...requestJSON.data.options[0] };
-  const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
 
   const requestHelpConfig = await getRequestTypeConfig(guildId, 'blossomderby.createtask');
 

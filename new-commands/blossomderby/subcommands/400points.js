@@ -1,5 +1,5 @@
 import { discordConstants } from '../../discordConsts.js';
-import { resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord } from '../../utilities.js';
+import { resolveDeferredToken, getChannelInformation, getRequestMessageContents, sendPayloadToDiscord, sendMessage, getRequestTypeConfig } from '../../utilities.js';
 
 const discordSlashMetadata = {
   'name': 'blossomderby.400points',
@@ -20,9 +20,10 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
     },
   };
 
-  const { application_id: applicationId, token: requestToken, channel_id: threadChannelId } = requestJSON;
+  const { application_id: applicationId, token: requestToken, channel_id: threadChannelId, guild_id: guildId } = requestJSON;
   const guildMember = requestJSON.member.nick || requestJSON.member.user.username;
 
+  const requestHelpConfig = await getRequestTypeConfig(guildId, 'blossomderby.createtask');
   const threadChannelInfoJSON = await getChannelInformation(threadChannelId);
 
   // Bot must own the thread and the thread must be public
@@ -43,20 +44,23 @@ export async function execute(requestJSON, lambdaEvent, lambdaContext) {
 
   await disableButton(requestJSON.message, discordSlashMetadata.name);
 
+  await sendMessage(requestHelpConfig['400announcementChannel'], { 'content': `<@&${requestHelpConfig.derbyRoleId}>: **${messageContentsJSON?.embeds[0].title}** is 400 points!  If you haven't already joined the queue and are interested in completing the task, head over to the thread: <#${threadChannelId}>` });
+
   await resolveDeferredToken(applicationId, requestToken, 'Task updated.  You may close this message at anytime.');
 
   return responseJson;
 }
 
 async function editInitialMessageEmbed(messageContentsJSON) {
-  const { channel_id: channelId, id: messageId, embeds: messageEmbed } = messageContentsJSON;
+  const { channel_id: channelId, id: messageId, embeds: [ messageEmbed ] } = messageContentsJSON;
 
-  messageEmbed[0].title += ' 400 POINTS!';
+  const payloadEmbed = { ...messageEmbed };
+  payloadEmbed.title += ' 400 POINTS!';
 
   const url = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;
 
   const payloadJSON = {
-    'embeds': messageEmbed,
+    'embeds': [payloadEmbed],
   };
 
   console.log('Send edited initial embedded message...');
