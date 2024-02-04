@@ -1,6 +1,6 @@
 import { discordConstants } from '../../discordConsts.js';
 import { discordSlashMetadata as commandMetadata } from '../commandMetadata.js';
-import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord } from '../../utilities.js';
+import { readJSONFile, sendMessage, createThread, inviteGuildMemberToThread, resolveDeferredToken, sendPayloadToDiscord, getRequestTypeConfig } from '../../utilities.js';
 
 export const discordSlashMetadata = {
   'name': 'blossomderby.createtask',
@@ -23,11 +23,13 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   const taskOptions = { ...requestJSON.data.options[0] };
   const requestHelpMessageObject = commandMetadata.config.createtask.requestEmbed;
 
+  const requestHelpConfig = await getRequestTypeConfig(guildId, 'blossomderby.createtask');
+
   // Create the temporary role
   const createRoleJSON = await createBlossomDerbyRole(guildId, taskOptions);
 
   // Build embed for the request channel
-  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, requestHelpMessageObject, createRoleJSON.id);
+  const postEmbedRequestJSON = await buildRequestEmbed(requestJSON, requestHelpConfig, createRoleJSON.id);
 
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
@@ -35,30 +37,25 @@ export async function execute(requestJSON, lambdaEvent, _lambdaContext) {
   await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
 
   // Build the embed for the thread
-  const threadEmbed = commandMetadata.config.createtask.requestHelpMessage;
-  const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRoleJSON);
+  const initialThreadMessageJSON = await buildThreadEmbed(createThreadRequestJSON, requestHelpConfig, createRoleJSON, taskOptions);
 
   await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
 }
 
-async function buildRequestEmbed(requestJSON, requestHelpMessageObject, roleId) {
-  const { guild_id: guildId } = requestJSON;
-  const serverConfig = await readJSONFile(`./config/${guildId}.json`);
-
+async function buildRequestEmbed(requestJSON, requestHelpConfig, roleId) {
   // Get the JSON for the specific command
   const taskOptions = requestJSON.data.options[0];
-  const taskName = taskOptions.options.find((i) => i.name == 'tasktitle').value;
+  const taskName = taskOptions.options.find((i) => i.name == 'taskname').value;
 
   // If the specific choice channel is specified, then use that channel.  If not, use all.
-  const requestTypeObject = serverConfig.requestTypes.find((i) => i.value == 'helptask') || serverConfig.requestTypes.find((i) => i.value == 'generalrequest');
-  const targetChannel = (requestTypeObject ? requestTypeObject.targetChannel : null);
-  const embedColor = serverConfig.requestMeta.colors.requestOpen || 0;
+  const targetChannel = requestHelpConfig.targetChannel;
+  const embedColor = requestHelpConfig.colors.requestOpen || 0;
 
   const messageObject = {
     'embeds': [{
-      'title': `${requestHelpMessageObject.title}: ${taskName}`,
+      'title': `${requestHelpConfig.requestEmbed.title}: ${taskName}`,
       'color': embedColor,
       'fields': [
         {
@@ -82,15 +79,14 @@ async function buildRequestEmbed(requestJSON, requestHelpMessageObject, roleId) 
   return postEmbedRequestJSON;
 }
 
-async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRoleJSON) {
-  // light pink from the blossom flower
-  const embedColor = 15833771;
+async function buildThreadEmbed(createThreadRequestJSON, requestHelpConfig, createRoleJSON, taskOptions) {
+  const threadEmbed = requestHelpConfig.requestHelpMessage;
 
   const messageObject = {
     embeds: [{
       'title': threadEmbed.title,
       'description': threadEmbed.description,
-      'color': embedColor,
+      'color': threadEmbed.color,
       'footer': {
         'text': `Blossom Task Role: @${createRoleJSON.name}`,
       },
@@ -134,8 +130,13 @@ async function buildThreadEmbed(createThreadRequestJSON, threadEmbed, createRole
     }],
   };
 
-  const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, messageObject);
+  if (taskOptions.options.find(i => (i.name == 'pingderby') && (i.value == true))) {
+    // Update this to ping the derby role
+    messageObject.content = `<@&${requestHelpConfig.derbyRoleId}>!`;
+    messageObject.embeds[0].description += '\n\n**Derby Ping!!**  This is a fast-task!  Everyone with the 🏇 Derby role is being pinged so that everyone can be ready to finish it.  Please follow the instructions above to add yourself to the queue.';
+  }
 
+  const threadEmbedJSON = await sendMessage(createThreadRequestJSON.id, messageObject);
   return threadEmbedJSON;
 }
 
@@ -144,7 +145,7 @@ async function createBlossomDerbyRole(guildId, taskOptions) {
 
   // Generate random string https://stackoverflow.com/a/8084248
   const r = (Math.random() + 1).toString(36).substring(6);
-  const taskName = taskOptions.options.find((i) => i.name == 'tasktitle').value;
+  const taskName = taskOptions.options.find((i) => i.name == 'taskname').value;
 
   const payloadJSON = {
     'name': `🌸 ${taskName} - ${r}`,

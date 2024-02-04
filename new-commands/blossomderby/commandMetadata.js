@@ -13,12 +13,12 @@ discordSlashMetadata.commandMetadata = {
   'options': [
     {
       'name': 'createtask',
-      'description': 'Blossom Task related commands',
+      'description': 'Create a Blossom Derby Task',
       'type': discordConstants.applicationCommandOptionType.SUB_COMMAND,
       'options': [
         {
-          'name': 'tasktitle',
-          'description': 'Derby Task Title (e.g. Wheat, Mining, Townie)',
+          'name': 'taskname',
+          'description': 'Derby Task Name (e.g. Wheat, Mining, Townie)',
           'type': discordConstants.applicationCommandOptionType.STRING,
           'required': true,
         },

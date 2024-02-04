@@ -33,6 +33,31 @@
         "id": "1019365780866998373",
         "name": "MrWicker"
       }
+    },
+    {
+      "display": false,
+      "targetChannel": "1025198053189238794",
+      "value": "blossomderby.createtask",
+      "400announcementChannel": "886330164265488414",
+      "derbyRoleId": "762019329771962420",
+      "requestEmbed": {
+        "title": "🌸 Blossom Derby Task",
+        "fields": [
+          {
+            "name": "Queue:",
+            "value": "(none)"
+          },
+          {
+            "name": "Completed:",
+            "value": "(none)"
+          }
+        ]
+      },
+      "requestHelpMessage": {
+        "title": "🌸 Blossom Derby Task",
+        "description": "**If you would like to take this task, please click the \"🌸\" to put yourself in the queue.** Once you have completed the task, click the button again so we can keep an accurate count of who needs to complete it.\n\nRemember **Blossom Task Etiquette**: Complete the task as quickly as possible so we can give everyone the opportunity to take it and get the most amount of points.  For Town Visitor Tasks, make sure you have ALL of the required visitors before taking the task since the game is known to mess with you.",
+        "color": 15833771
+      }
     }
   ]
 }
