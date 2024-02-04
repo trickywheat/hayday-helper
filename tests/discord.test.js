@@ -6,6 +6,7 @@ test('Postman Ping Test', async () => {
       'authorization': 'Bearer ' + process.env.POSTMAN_VERIFY,
     },
     'requestContext': {
+      'domainPrefix': 'jestiotest',
       'http': {
         'method': 'POST',
         'path': '/discord',
@@ -26,7 +27,7 @@ test('Postman Ping Test', async () => {
 test('Discord Cryptographic Ping Test', async () => {
   const lambdaEvent = {
     'headers': {
-      'x-signature-ed25519': 'hayday!',
+      'x-signature-ed25519': '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       'x-signature-timestamp': '00000000',
     },
     'requestContext': {
@@ -39,6 +40,8 @@ test('Discord Cryptographic Ping Test', async () => {
       'type': 1,
     }),
   };
+
+  process.env.DISCORD_BOT_PUBLIC_KEY = '0000000000000000000000000000000000000000000000000000000000000000';
 
   const result = await handler(lambdaEvent, {});
   expect(result.statusCode).toEqual(401);
