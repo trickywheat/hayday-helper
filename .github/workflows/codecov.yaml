@@ -44,18 +44,10 @@ jobs:
       - name: Run npm install (include development packages for testing)
         run: npm install
 
-      # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-1
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900 # minimum is 15 minutes
-          mask-aws-account-id: true
-
       - name: Run coverage tests
         run: npm test
         env:
-          POSTFIX_DYNAMODB_TABLE: ${{ secrets.POSTFIX_DYNAMODB_TABLE }}
+          POSTMAN_VERIFY: ${{ secrets.POSTMAN_VERIFY }}
       
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
