@@ -28,7 +28,10 @@ test('Command: setupderby', async () => {
 
   const result = await handler(lambdaEvent, {});
   expect(result.statusCode).toEqual(200);
-  console.log(JSON.stringify(result));
 
-  expect(result.body).toMatch('Bingo Derby');
+  console.log(JSON.stringify(result));
+  const jsonResults = JSON.parse(result.body);
+
+  expect(jsonResults.type).toEqual(4);
+  expect(jsonResults.data.embeds[0].title).toMatch('Bingo Derby');
 });
