@@ -1,16 +1,8 @@
-/*
-  Ping Command
-  Type: CHAT_INPUT
-*/
-import { discordConstants } from './discordConsts.js';
-import { installSlashCommand } from './installSlashCommands.js';
-import { readJSONFile } from './utilities.js';
-
-export const discordSlashMetadata = {
-  'name': 'about',
-  'type': discordConstants.applicationCommandType.CHAT_INPUT,
-  'description': 'Gives you information about the bot.',
-};
+import { installSlashCommand } from '../installSlashCommands.js';
+import { discordSlashMetadata } from './commandMetadata.js';
+import { discordConstants } from '../discordConsts.js';
+import { readJSONFile } from '../utilities.js';
+export { discordSlashMetadata };
 
 export async function execute(_requestJSON, lambdaEvent) {
   const npmPackage = await readJSONFile('./package.json');
