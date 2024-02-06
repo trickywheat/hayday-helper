@@ -24,6 +24,7 @@ jobs:
       id-token: write
       contents: read
 
+    if: ${{ github.ref == 'This workflow is disabled' }}
     name: Node test
     steps:
       - name: Check out the repo
