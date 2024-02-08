@@ -2,7 +2,7 @@
   "panelChannel": "1015979293412696064",
   "requestMeta": {
     "initialThreadMessage": "Can you help out?\nDiscuss your request in this thread.  Once you are done, click the button below (or use the slash command `deletethread`) to delete the thread.\n\n**WARNING:** Once a thread is deleted, it cannot be recovered.",
-    "embeds": [{
+    "menuEmbeds": [{
       "title": "Got a request for the neighborhood?",
       "description": "Tell us what you need and we'll do our best to help you."
     }],

@@ -30,7 +30,7 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
   const serverConfig = await readJSONFile(`./config/${guildId}.json`);
 
   const messageObject = {
-    embeds: [ ...serverConfig.requestMeta ],
+    embeds: [ ...serverConfig.requestMeta.menuEmbeds ],
     components: [{
       'type': discordConstants.componentType.ACTION_ROW,
       'components': [
@@ -56,7 +56,7 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
 }
 
 function buildMenuItems(requestTypesArray) {
-  const returnArray = requestTypesArray.map((i) => {
+  const returnArray = requestTypesArray.filter((i) => !Object.prototype.hasOwnProperty.call(i, 'display') || i.display).map((i) => {
     const optionObject = {
       'label': i.label,
       'value': i.value,

@@ -37,12 +37,14 @@ export async function callbackExecute(requestJSON, lambdaEvent, lambdaContext) {
   // Create the Thread
   const createThreadRequestJSON = await createThread(postEmbedRequestJSON.channel_id, postEmbedRequestJSON.id, postEmbedRequestJSON.embeds[0].title);
 
-  await inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id);
+  const promiseArray = [];
+  promiseArray.push(inviteGuildMemberToThread(createThreadRequestJSON.id, requestJSON.member.user.id));
 
   // Send Initial Thread Message
-  const initialThreadMessageJSON = await sendInitialThreadMessage(createThreadRequestJSON, requestHelpConfig);
+  promiseArray.push(sendInitialThreadMessage(createThreadRequestJSON, requestHelpConfig));
 
-  await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${initialThreadMessageJSON.channel_id}>  You may dismiss this message at anytime.`);
+  responseJson.data.results = await Promise.all(promiseArray);
+  await resolveDeferredToken(applicationId, requestToken, `Your request thread has been created: <#${createThreadRequestJSON.id}>  You may dismiss this message at anytime.`);
 
   return responseJson;
 }
@@ -77,7 +79,7 @@ async function sendInitialThreadMessage(createThreadRequestJSON, requestHelpConf
       'components': [
         {
           'type': discordConstants.componentType.BUTTON,
-          'style': discordConstants.buttonStyle.PRIMARY,
+          'style': discordConstants.buttonStyle.DANGER,
           'label': 'Delete Thread',
           'custom_id': 'deletethread',
         },
