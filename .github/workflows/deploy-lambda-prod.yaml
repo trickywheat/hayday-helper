@@ -1,15 +1,12 @@
 name: Node Build and Deploy
 on:
   push:
-    branches-ignore:
-      - 'main'
-
-
+    tags:
+      - 'v*'
 
 defaults:
   run:
     shell: bash
-
 
 jobs:
   npm-test:
@@ -19,7 +16,6 @@ jobs:
         node-version: [20]
 
     name: Node ${{ matrix.node-version }} build
-    if: ${{ github.ref == 'This workflow is disabled' }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -40,30 +36,13 @@ jobs:
 
 
 # ----------------------------- #
-
-  aws-deploy-dev:
-    if: startsWith(github.ref_name, 'dev-')
-    uses: ./.github/workflows/aws-deploy.yaml
-    secrets: inherit
-    with: 
-      environment-name: development
-
-  discord-deploy-dev:
-    if: startsWith(github.ref_name, 'dev-')
-    uses: ./.github/workflows/discord-slash-commands-deploy.yaml
-    secrets: inherit
-    with: 
-      environment-name: development
-
-  aws-deploy-qa-prod:
-    if: startsWith(github.ref_name, 'qa-')
+  aws-deploy-prod:
     uses: ./.github/workflows/aws-deploy.yaml
     secrets: inherit
     with: 
       environment-name: production
 
-  discord-deploy-qa-prod:
-    if: startsWith(github.ref_name, 'qa-')
+  discord-deploy-prod:
     uses: ./.github/workflows/discord-slash-commands-deploy.yaml
     secrets: inherit
     with: 

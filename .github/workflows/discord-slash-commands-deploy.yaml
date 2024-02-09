@@ -13,26 +13,23 @@ defaults:
 jobs:
   discord-slash-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16]
     
     environment: ${{ inputs.environment-name }}
 
     name: Deploy Slash Commands to Discord
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:

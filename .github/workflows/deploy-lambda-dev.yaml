@@ -1,0 +1,51 @@
+name: Node Build and Deploy
+on:
+  push:
+    branches:
+      - 'dev-*'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  npm-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+
+    name: Node ${{ matrix.node-version }} build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+
+      - name: Run npm install
+        run: npm i
+
+
+# ----------------------------- #
+
+  aws-deploy-dev:
+    uses: ./.github/workflows/aws-deploy.yaml
+    secrets: inherit
+    with: 
+      environment-name: development
+
+  discord-deploy-dev:
+    uses: ./.github/workflows/discord-slash-commands-deploy.yaml
+    secrets: inherit
+    with: 
+      environment-name: development
+
