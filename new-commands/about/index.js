@@ -58,10 +58,11 @@ export async function execute(_requestJSON, lambdaEvent) {
 export async function install() {
   const discordResponse = await installSlashCommand(discordSlashMetadata.commandMetadata);
   console.log(discordResponse);
+  return discordResponse;
 }
 
 if (process.env.INSTALL_COMMAND) {
-  install().then(() => {
-    console.log(`Command ${discordSlashMetadata.name} installed.`);
+  install().then((discordResponse) => {
+    console.log(`Command ${discordResponse.name} installed on Guild ${discordResponse.guild_id} with id ${discordResponse.id}`);
   });
 }

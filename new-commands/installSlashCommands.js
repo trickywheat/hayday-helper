@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
-dotenv.config({ 'path': '../../.env' });
+dotenv.config();
 
 export async function installSlashCommand(body, method = 'post') {
   // Current Scope: GUILD
+  console.log('installSlashCommands.installSlashCommand: ' + JSON.stringify(body));
   const url = `https://discord.com/api/v10/applications/${process.env.DISCORD_BOT_APP_ID}/guilds/${process.env.TARGET_GUILD_ID}/commands`;
   const payloadJSON = {
     'method': method,

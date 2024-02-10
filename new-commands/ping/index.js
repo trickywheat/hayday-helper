@@ -17,6 +17,7 @@ export function execute() {
 export async function install() {
   const discordResponse = await installSlashCommand(discordSlashMetadata.commandMetadata);
   console.log(discordResponse);
+  return discordResponse;
 }
 
 if (process.env.INSTALL_COMMAND) {

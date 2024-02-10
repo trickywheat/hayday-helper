@@ -1,6 +1,7 @@
 export const discordConstants = {
   // https://discord.com/developers/docs/interactions/application-commands#application-command-object
   'applicationCommandType': {
+    'COMMAND_RESPONSE': -1,
     'CHAT_INPUT': 1,
     'USER': 2,
     'MESSAGE': 3,
