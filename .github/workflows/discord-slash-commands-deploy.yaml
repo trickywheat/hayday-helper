@@ -49,13 +49,8 @@ jobs:
       - name: Run npm install
         run: npm i
 
-      - name: zip up the folder
-        run: npm run build
-
       - name: Execute slash-command installer
-        run: |
-          cd commands/
-          node index.js
+        run: bash .ci/runCommandInstall.bash
         env:
           DISCORD_BOT_APP_ID: ${{ secrets.DISCORD_BOT_APP_ID }}
           TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
