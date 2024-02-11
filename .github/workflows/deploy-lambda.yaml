@@ -17,7 +17,7 @@ defaults:
   run:
     shell: bash
 
-jobs:  
+jobs:
   determine-environment:
     runs-on: ubuntu-latest
     outputs:
