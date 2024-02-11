@@ -9,8 +9,6 @@ export async function execute(_requestJSON, lambdaEvent) {
   const npmVersion = process.env.npm_package_version || npmPackage.version || 'undefined';
   // "1.5.0+build.5-commit.57cffe2ecb84cc0a644b76a4d9a4b17e0769abbb"
 
-  console.log('process.env: ' + JSON.stringify(process.env));
-  console.log('npmVersion: ' + JSON.stringify(npmPackage));
   const versionObject = {
     'version': npmVersion.split('+')[0],
   };
