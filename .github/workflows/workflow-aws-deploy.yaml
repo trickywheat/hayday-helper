@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 jobs:
-  npm-build-discord-slash-deploy:
+  npm-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Cache node modules
@@ -52,6 +52,29 @@ jobs:
       - name: Run npm install
         run: npm i --only=prod
 
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.8.0
+        with:
+          release-branch: main
+      
+      - name: Show git-version info
+        run: |
+          echo "Previous Version: ${PREV_VERSION}"
+          echo "New Version: ${VERSION}"
+        env:
+          PREV_VERSION: ${{ steps.version.outputs.previous-version }}
+          VERSION: ${{ steps.version.outputs.version }}   
+
+      - name: Append git commit-sha to package.json
+        run: |
+          jq -r --arg BUILD_ID ${BUILD_ID} --arg COMMIT ${COMMIT_SHA} '.version = .version + "+build." + $BUILD_ID + "-commit." + $COMMIT' ./package.json > ./new-package.json
+          rm ./package.json && mv ./new_package.json ./package.json
+          cat ./package.json
+        env:
+          BUILD_ID: ${{ github.run_number }}
+          COMMIT_SHA: ${{ github.sha }}  
+
       - name: zip up the folder
         run: npm run build
 
@@ -66,7 +89,7 @@ jobs:
 # ----------------------------- #
 
   aws-deploy:
-    needs: npm-build-discord-slash-deploy
+    needs: npm-build
     runs-on: ubuntu-latest
     strategy:
       matrix:
