@@ -24,10 +24,10 @@ jobs:
         id: reference-check
         run: |
           echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
-          if [[ $GITHUB_REF_NAME == dev-*]]; then
+          if [[ $GITHUB_REF_NAME == dev-* ]]; then
             echo "Setting TARGET_ENVIRONMENT to development"
             echo "TARGET_ENVIRONMENT=development" >> $GITHUB_OUTPUT
-          elif [[ $GITHUB_REF_NAME == v*]]; then
+          elif [[ $GITHUB_REF_NAME == v* ]]; then
             echo "Setting TARGET_ENVIRONMENT to production"
             echo "TARGET_ENVIRONMENT=production" >> $GITHUB_OUTPUT
           else
