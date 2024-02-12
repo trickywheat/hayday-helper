@@ -25,3 +25,7 @@ While I used [@jakjus's](https://github.com/jakjus) [article as a guide](https:/
 | DISCORD_BOT_APP_ID | Your Discord Bot's App ID, available from the bot's Application "Bot" page | Yes |
 | POSTMAN_VERIFY | For fast prototyping, you can trigger your lambda using it's Function URL.  To authenticate, you can give this variable a long random string, such as a UUID. | No |
 
+# Configuration
+
+Version 2 brings a new configuration schema, which means that configs from version 1 will not work.
+

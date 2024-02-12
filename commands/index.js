@@ -1,5 +1,14 @@
-require('dotenv').config({ 'path': '../.env' });
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+import dotenv from 'dotenv';
+dotenv.config({ 'path': '../../.env' });
+
+import { fileURLToPath } from 'node:url';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const __basedir = resolve(__dirname, '../');
+
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -10,7 +19,7 @@ installSlashCommands().finally(function() {
 
 
 async function installSlashCommands() {
-  const commandsPath = path.join(__dirname);
+  const commandsPath = join(__dirname);
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file != 'index.js');
 
   // Current Scope: GUILD

@@ -1,3 +1,5 @@
 node_modules/
 .env
 function.zip
+coverage/
+tests/*.json

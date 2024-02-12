@@ -1,0 +1,63 @@
+{
+  "panelChannel": "1015979293412696064",
+  "requestMeta": {
+    "initialThreadMessage": "Can you help out?\nDiscuss your request in this thread.  Once you are done, click the button below (or use the slash command `deletethread`) to delete the thread.\n\n**WARNING:** Once a thread is deleted, it cannot be recovered.",
+    "menuEmbeds": [{
+      "title": "Got a request for the neighborhood?",
+      "description": "Tell us what you need and we'll do our best to help you."
+    }],
+    "colors": {
+      "requestOpen": 63265,
+      "requestClose": 12007737
+    }
+  },
+  "requestTypes": [
+    {
+      "targetChannel": "1025198023761989673",
+      "label": "Rares",
+      "value": "rares",
+      "description": "Need some wheat?  Maybe a few blankets?",
+      "placeholder": "I am looking for planks and will trade nails.",
+      "emoji": {
+        "id": "1019364861718823042",
+        "name": "Bolt"
+      }
+    },
+    {
+      "targetChannel": "1025198053189238794",
+      "label": "General Request",
+      "value": "generalrequest",
+      "description": "Need some wheat?  Maybe a few blankets?  Or anything else not listed.",
+      "placeholder": "I need potatoes for my boat.",
+      "emoji": {
+        "id": "1019365780866998373",
+        "name": "MrWicker"
+      }
+    },
+    {
+      "display": false,
+      "targetChannel": "1025198053189238794",
+      "value": "blossomderby.createtask",
+      "400announcementChannel": "740177216134053890",
+      "derbyRoleId": "762019329771962420",
+      "requestEmbed": {
+        "title": "🌸 Blossom Derby Task",
+        "fields": [
+          {
+            "name": "Queue:",
+            "value": "(none)"
+          },
+          {
+            "name": "Completed:",
+            "value": "(none)"
+          }
+        ]
+      },
+      "requestHelpMessage": {
+        "title": "🌸 Blossom Derby Task",
+        "description": "**If you would like to take this task, please click the \"🌸\" to put yourself in the queue.** Once you have completed the task, click the button again so we can keep an accurate count of who needs to complete it.\n\nRemember **Blossom Task Etiquette**: Complete the task as quickly as possible so we can give everyone the opportunity to take it and get the most amount of points.  For Town Visitor Tasks, make sure you have ALL of the required visitors before taking the task since the game is known to mess with you.",
+        "color": 15833771
+      }
+    }
+  ]
+}
