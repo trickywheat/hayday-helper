@@ -1,0 +1,56 @@
+name: Jest Testing and Codecov Reporting
+on:
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - '**.js'
+  push:
+    branches:
+      - 'run-unit-tests'
+      - 'write-unit-tests'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  npm-test:
+    runs-on: ubuntu-latest
+
+    environment: testing
+
+    permissions:
+      id-token: write
+      contents: read
+
+    if: ${{ github.ref == 'This workflow is disabled' }}
+    name: Node test
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: '**/package-lock.json'
+          node-version: 20
+          cache: 'npm'
+
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+
+      - name: Run npm install (include development packages for testing)
+        run: npm install
+
+      - name: Run coverage tests
+        run: npm test
+        env:
+          POSTMAN_VERIFY: ${{ secrets.POSTMAN_VERIFY }}
+      
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

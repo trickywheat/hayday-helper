@@ -13,26 +13,23 @@ defaults:
 jobs:
   discord-slash-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16]
     
     environment: ${{ inputs.environment-name }}
 
     name: Deploy Slash Commands to Discord
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: 'npm'
 
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -50,16 +47,12 @@ jobs:
         run: npm list
 
       - name: Run npm install
-        run: npm i --only=prod
-
-      - name: zip up the folder
-        run: npm run build
+        run: npm i
 
       - name: Execute slash-command installer
-        run: |
-          cd commands/
-          node index.js
+        run: bash .ci/runCommandInstall.bash
         env:
           DISCORD_BOT_APP_ID: ${{ secrets.DISCORD_BOT_APP_ID }}
           TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+

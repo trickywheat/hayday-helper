@@ -3,23 +3,23 @@
   "version": "1.2.1",
   "description": "Discord Bot that helps coordinate Hayday things.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "rm function.zip ; zip -r function.zip ./*",
     "create-lambda": "bash .ci/deploy-lambda.bash create",
     "update-lambda": "bash .ci/deploy-lambda.bash update",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest"
   },
   "author": "Tricky Wheat",
   "license": "AGPL",
   "private": true,
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.171.0",
+    "@aws-sdk/client-lambda": "^3.511.0",
     "discord-interactions": "^3.2.0",
-    "dotenv": "^16.0.2",
-    "node-fetch": "^3.2.10"
+    "dotenv": "^16.0.2"
   },
   "devDependencies": {
-    "esbuild": "^0.15.9",
-    "eslint": "^8.24.0"
+    "eslint": "^8.24.0",
+    "jest": "^29.7.0"
   }
 }

@@ -1,36 +1,47 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/javascript-node
 {
-	"name": "Node.js",
-	"build": {
-		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick a Node version: 12, 14, 16
-		"args": { "VARIANT": "16" }
-	},
+  "name": "Node.js",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
+  },
 
-	"mounts": [
-		"type=bind,source=${localWorkspaceFolder}/../trickywheat_me.bash,destination=${containerWorkspaceFolder}/../trickywheat_me.bash,readonly=true",
-		"type=bind,source=${localEnv:HOME}/.ssh/id_ed25519.trickywheat-git,destination=${containerWorkspaceFolder}/../id_ed25519.trickywheat-git,readonly=true"
-	],
+  "mounts": [
+    "type=bind,source=${localEnv:HOME}/.aws,destination=/mnt/localAws,readonly=true",
+    "type=bind,source=${localWorkspaceFolder}/../trickywheat_me.bash,destination=${containerWorkspaceFolder}/../trickywheat_me.bash,readonly=true",
+    "type=bind,source=${localEnv:HOME}/.ssh/id_ed25519.trickywheat-git,destination=${containerWorkspaceFolder}/../id_ed25519.trickywheat-git,readonly=true"
+  ],
+  
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-	"containerEnv": {
-		"WORKSPACE": "${containerWorkspaceFolder}"
-	},
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "ln -s /mnt/localAws ${HOME}/.aws; npm i",
 
-	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+  // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "node",
 
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
-		"dbaeumer.vscode-eslint"
-	],
+  "containerEnv": {
+    "WORKSPACE": "${containerWorkspaceFolder}",
+    "AWS_PROFILE": "vs-hotel-delta",
+    "AWS_REGION": "us-east-1",
+    "AWS_PAGER": ""
+  },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
-
-	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "node"
+  "customizations": {
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {},
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "streetsidesoftware.code-spell-checker",
+        "redhat.vscode-yaml",
+				"github.vscode-github-actions",
+				"mhutchie.git-graph",
+				"Orta.vscode-jest"
+      ]
+    }
+  }
 }

@@ -11,28 +11,31 @@ defaults:
     shell: bash
 
 jobs:
-  npm-build-discord-slash-deploy:
+  npm-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [20]
     
     environment: ${{ inputs.environment-name }}
 
     name: Node ${{ matrix.node-version }} build and Discord Slash-Command Deployment
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -52,11 +55,35 @@ jobs:
       - name: Run npm install
         run: npm i --only=prod
 
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.8.0
+        with:
+          release-branch: main
+          prefix: v
+      
+      - name: Show git-version info
+        run: |
+          echo "Previous Version: ${PREV_VERSION}"
+          echo "New Version: ${VERSION}"
+        env:
+          PREV_VERSION: ${{ steps.version.outputs.previous-version }}
+          VERSION: ${{ steps.version.outputs.version }}   
+
+      - name: Append git commit-sha to package.json
+        run: |
+          jq -r --arg BUILD_ID ${BUILD_ID} --arg COMMIT ${COMMIT_SHA} '.version = .version + "+build." + $BUILD_ID + "-commit." + $COMMIT' ./package.json > ./new-package.json
+          rm ./package.json && mv ./new-package.json ./package.json
+          cat ./package.json
+        env:
+          BUILD_ID: ${{ github.run_number }}
+          COMMIT_SHA: ${{ github.sha }}  
+
       - name: zip up the folder
         run: npm run build
 
       - name: Upload Zip File for Downstream Use
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: function.zip
           path: function.zip
@@ -66,11 +93,11 @@ jobs:
 # ----------------------------- #
 
   aws-deploy:
-    needs: npm-build-discord-slash-deploy
+    needs: npm-build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [20]
 
     environment: ${{ inputs.environment-name }}
 
@@ -83,13 +110,13 @@ jobs:
       id-token: write
       contents: read
 
-    name: Deploy to AWS - ${{ matrix.environment }} - nodejs ${{ matrix.node-version }} 
+    name: Deploy to AWS - ${{ inputs.environment-name }} - nodejs ${{ matrix.node-version }} 
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Download a single artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: function.zip
       
@@ -97,7 +124,7 @@ jobs:
         run: unzip -l function.zip
 
       # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
-      - uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
