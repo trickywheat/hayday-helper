@@ -115,7 +115,7 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
   let returnListText = null;
   const re = new RegExp(`^${guildMember}.*$`, 'm');
   const matchedLine = queueListText.match(re)?.[0];
-  console.log('matchedLine: ' + matchedLine);
+  console.log('removedFromList - matchedLine: ' + matchedLine);
 
   if (!matchedLine) {
     // If the match is undefined, it means it does not contain the
@@ -123,14 +123,16 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
     return queueListText;
   }
 
-  const matchedLineParts = matchedLine.split(' ');
+  // Remove the guildMember, trim the remaining string, then split by spaces.
+  // This will leave only the emojis in an array.
+  const blossomEmojiArray = matchedLine.slice(guildMember.length).trim().split(' ');
 
   // Matching on the blossomEmoji implicitly means
   // a match on the guildMember as well
-  if (matchedLineParts.includes(blossomEmoji)) {
-    if (matchedLineParts.length > 2) {
-      const remainingParts = matchedLineParts.filter(i => i != blossomEmoji);
-      returnListText = queueListText.replace(matchedLine, remainingParts.join(' ') + '\n');
+  if (blossomEmojiArray.includes(blossomEmoji)) {
+    if (blossomEmojiArray.length > 1) {
+      const remainingEmojis = blossomEmojiArray.filter(i => i != blossomEmoji);
+      returnListText = queueListText.replace(matchedLine, guildMember + ' ' + remainingEmojis.join(' ') + '\n');
     } else {
       returnListText = queueListText.replace(matchedLine, '');
     }
@@ -150,7 +152,7 @@ function addToList(queueListText, guildMember, blossomEmoji) {
   let returnListText = null;
   const re = new RegExp(`^${guildMember}.*$`, 'm');
   const matchedLine = queueListText.match(re)?.[0];
-  console.log('matchedLine: ' + matchedLine);
+  console.log('addToList - matchedLine: ' + matchedLine);
 
   if (!matchedLine) {
     // If the match is undefined, it means guildMember isn't in the list
