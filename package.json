@@ -16,7 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.511.0",
     "discord-interactions": "^3.2.0",
-    "dotenv": "^16.4.3"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "eslint": "^8.24.0",
