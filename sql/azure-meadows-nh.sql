@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS azure_meadows_nh.derby_types (
 );
 
 CREATE TABLE IF NOT EXISTS azure_meadows_nh.derby_history (
-  DERBY_ID UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  -- DERBY_ID UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   DERBY_START_DATE DATE PRIMARY KEY CHECK (date_part('dayofweek', DERBY_START_DATE) = 2),
   DERBY_TYPE_ID INT8 REFERENCES azure_meadows_nh.derby_types (DERBY_TYPE_ID),
   DERBY_PLACEMENT INT8
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS azure_meadows_nh.derby_history (
 CREATE TABLE IF NOT EXISTS azure_meadows_nh.derby_participation (
   DERBY_PARTICIPATION_ID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   -- DERBY_START_DATE DATE REFERENCES azure_meadows_nh.derby_history(DERBY_START_DATE),
-  DERBY_ID UUID REFERENCES azure_meadows_nh.derby_history(DERBY_ID),
+  DERBY_START_DATE DATE REFERENCES azure_meadows_nh.derby_history(DERBY_START_DATE),
   NEIGHBOR_ID INT8 REFERENCES azure_meadows_nh.neighbors(NEIGHBOR_ID),
   TASKS_TAKEN INT8,
   TASKS_ASSIGNED INT8,
@@ -79,70 +79,76 @@ CREATE VIEW azure_meadows_nh.derby_standings AS
   INNER JOIN azure_meadows_nh.derby_types AS dt 
     ON dt.DERBY_TYPE_ID = dh.DERBY_TYPE_ID
   INNER JOIN azure_meadows_nh.derby_participation AS dp
-    ON dp.DERBY_START_DATE = dh.DERBY_START_DATE
+    ON dp.DERBY_START_DATE = dh.DERBY_START_DATE 
   GROUP BY dh.DERBY_START_DATE
     , dt.DERBY_TYPE_NAME
     , dh.DERBY_PLACEMENT
 ;
 
 
-SELECT 
-    nh.FARM_NAME
-  , nh.NEIGHBOR_ROLE
-  , MAX(al_join_date.ACTION_LOG_DATE) AS JOIN_DATE
-  , al_strikes.STRIKES
-  , al_strikes.EARLIEST_STRIKE
-  , al_strikes.NEXT_STRIKE_EXPIRY
-  , dp_summary.NUMBER_OF_DERBIES
-  , dp_summary.LAST_DERBY
-  , dp_summary.AVERAGE_POINTS
-FROM azure_meadows_nh.neighbors AS nh
-  LEFT JOIN azure_meadows_nh.action_log AS al_join_date
-    ON al_join_date.NEIGHBOR_ID = nh.NEIGHBOR_ID 
-      AND al_join_date.ACTION_TYPE_ID = (SELECT ACTION_TYPE_ID 
-                            FROM azure_meadows_nh.action_types 
-                            WHERE ACTION_TYPE_NAME = 'Joined Neighborhood')
-  LEFT JOIN (
-    SELECT 
-        NEIGHBOR_ID
-      , COUNT(ACTION_LOG_ID) AS STRIKES
-      , MIN(ACTION_LOG_DATE) AS EARLIEST_STRIKE
-      , MIN(ACTION_LOG_DATE) + INTERVAL '60 days' AS NEXT_STRIKE_EXPIRY
-    FROM azure_meadows_nh.action_log
-    WHERE ACTION_TYPE_ID = (SELECT ACTION_TYPE_ID 
-                            FROM azure_meadows_nh.action_types 
-                            WHERE ACTION_TYPE_NAME = 'Strike')
-      AND ACTION_LOG_DATE >= (current_date() - 60)
-    GROUP BY NEIGHBOR_ID
-  ) AS al_strikes ON al_strikes.NEIGHBOR_ID = nh.NEIGHBOR_ID
-  LEFT JOIN (
-    SELECT
-        dp.NEIGHBOR_ID
-      , COUNT(dp.DERBY_PARTICIPATION_ID) AS NUMBER_OF_DERBIES
-      , MAX(dh.DERBY_START_DATE) AS LAST_DERBY
-      , ROUND(AVG(dp.DERBY_POINTS), 1) AS AVERAGE_POINTS
-    FROM azure_meadows_nh.derby_participation AS dp
-      INNER JOIN azure_meadows_nh.derby_history AS dh
-        ON dh.DERBY_ID = dp.DERBY_ID
-    GROUP BY dp.NEIGHBOR_ID
-  ) AS dp_summary ON dp_summary.NEIGHBOR_ID = nh.NEIGHBOR_ID
-  LEFT JOIN (
-    SELECT 
-        NEIGHBOR_ID
-      , MAX(ACTIVITY_LOG_DATE) AS LAST_ACTIVITY_CHECK
-      , ACTIVITY_TYPE_POINTS
-    FROM azure_meadows_nh.activity_check_log AS acl
-      INNER JOIN azure_meadows_nh.action_types AS at
-        on at.ACTION_TYPE_ID = acl.ACTION_TYPE_ID
-    GROUP BY NEIGHBOR_ID
-  )
-GROUP BY 
-    nh.FARM_NAME
-  , nh.NEIGHBOR_ROLE
-  , al_strikes.STRIKES
-  , al_strikes.EARLIEST_STRIKE 
-  , al_strikes.NEXT_STRIKE_EXPIRY
-  , dp_summary.NUMBER_OF_DERBIES
-  , dp_summary.LAST_DERBY
-  , dp_summary.AVERAGE_POINTS
-;
+-- General view
+CREATE VIEW azure_meadows_nh.neighbor_view AS
+  SELECT 
+      nh.FARM_NAME
+    , nh.NEIGHBOR_ROLE
+    , MAX(al_join_date.ACTION_LOG_DATE) AS JOIN_DATE
+    , al_strikes.STRIKES
+    , al_strikes.EARLIEST_STRIKE
+    , al_strikes.NEXT_STRIKE_EXPIRY
+    , dp_summary.NUMBER_OF_DERBIES
+    , dp_summary.LAST_DERBY
+    , dp_summary.AVERAGE_POINTS
+    , ac_summary.LAST_ACTIVITY_CHECK
+    , ac_summary.LAST_ACTIVITY_CHECK_POINTS
+  FROM azure_meadows_nh.neighbors AS nh
+    LEFT JOIN azure_meadows_nh.action_log AS al_join_date
+      ON al_join_date.NEIGHBOR_ID = nh.NEIGHBOR_ID 
+        AND al_join_date.ACTION_TYPE_ID = (SELECT ACTION_TYPE_ID 
+                              FROM azure_meadows_nh.action_types 
+                              WHERE ACTION_TYPE_NAME = 'Joined Neighborhood')
+    LEFT JOIN (
+      SELECT 
+          NEIGHBOR_ID
+        , COUNT(ACTION_LOG_ID) AS STRIKES
+        , MIN(ACTION_LOG_DATE) AS EARLIEST_STRIKE
+        , MIN(ACTION_LOG_DATE) + INTERVAL '60 days' AS NEXT_STRIKE_EXPIRY
+      FROM azure_meadows_nh.action_log
+      WHERE ACTION_TYPE_ID = (SELECT ACTION_TYPE_ID 
+                              FROM azure_meadows_nh.action_types 
+                              WHERE ACTION_TYPE_NAME = 'Strike')
+        AND ACTION_LOG_DATE >= (current_date() - 60)
+      GROUP BY NEIGHBOR_ID
+    ) AS al_strikes ON al_strikes.NEIGHBOR_ID = nh.NEIGHBOR_ID
+    LEFT JOIN (
+      SELECT
+          dp.NEIGHBOR_ID
+        , COUNT(dp.DERBY_PARTICIPATION_ID) AS NUMBER_OF_DERBIES
+        , MAX(dh.DERBY_START_DATE) AS LAST_DERBY
+        , ROUND(AVG(dp.DERBY_POINTS), 1) AS AVERAGE_POINTS
+      FROM azure_meadows_nh.derby_participation AS dp
+        INNER JOIN azure_meadows_nh.derby_history AS dh
+          ON dp.DERBY_START_DATE = dh.DERBY_START_DATE 
+      GROUP BY dp.NEIGHBOR_ID
+    ) AS dp_summary ON dp_summary.NEIGHBOR_ID = nh.NEIGHBOR_ID
+    LEFT JOIN (
+      SELECT 
+          NEIGHBOR_ID
+        , MAX(ACTIVITY_LOG_DATE) AS LAST_ACTIVITY_CHECK
+        , ACTIVITY_TYPE_POINTS AS LAST_ACTIVITY_CHECK_POINTS
+      FROM azure_meadows_nh.activity_check_log AS acl
+        INNER JOIN azure_meadows_nh.activity_types AS at
+          on at.ACTIVITY_TYPE_ID = acl.ACTIVITY_TYPE_ID
+      GROUP BY NEIGHBOR_ID, ACTIVITY_TYPE_POINTS
+    ) AS ac_summary ON ac_summary.NEIGHBOR_ID = nh.NEIGHBOR_ID
+  GROUP BY 
+      nh.FARM_NAME
+    , nh.NEIGHBOR_ROLE
+    , al_strikes.STRIKES
+    , al_strikes.EARLIEST_STRIKE 
+    , al_strikes.NEXT_STRIKE_EXPIRY
+    , dp_summary.NUMBER_OF_DERBIES
+    , dp_summary.LAST_DERBY
+    , dp_summary.AVERAGE_POINTS
+    , ac_summary.LAST_ACTIVITY_CHECK
+    , ac_summary.LAST_ACTIVITY_CHECK_POINTS
+  ;
