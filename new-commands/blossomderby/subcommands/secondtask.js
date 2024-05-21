@@ -34,6 +34,9 @@ export async function execute(requestJSON, lambdaEvent) {
   newBlossomButton.custom_id = newBlossomButton.custom_id.replace('cherryblossom', 'blossom');
   updatedMessageObject.components[0].components.push(newBlossomButton);
 
+  // remove unneeded id.
+  delete newBlossomButton.id;
+
   // disable the secondtask button
   updatedMessageObject.components[1].components = messageContentsJSON.components[1].components.map((i) => {
     if (i.custom_id == discordSlashMetadata.name) i.disabled = true;
