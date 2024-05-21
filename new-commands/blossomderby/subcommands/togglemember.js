@@ -146,7 +146,7 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
   }
 
   // remove newlines 
-  while (returnListText.contains('\n\n')) {
+  while (returnListText.indexOf('\n\n')) {
     returnListText.replace('\n\n', '\n');    
   }
 
