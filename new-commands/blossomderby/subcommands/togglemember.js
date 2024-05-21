@@ -179,7 +179,7 @@ function addToList(queueListText, guildMember, blossomEmoji) {
   }
 
   // remove newlines
-  while (returnListText.contains('\n\n')) {
+  while (returnListText.indexOf('\n\n') > -1) {
     returnListText.replace('\n\n', '\n');    
   }
 
