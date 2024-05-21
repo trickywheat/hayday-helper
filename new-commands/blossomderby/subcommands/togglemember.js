@@ -188,7 +188,8 @@ async function toggleRole(action, guildId, guildMemberId, roleId) {
 
 function removeNewLines(text) {
   let returnText = text;
-
+  console.log('blossom.derby.togglemember.removeNewLines - ' + returnText);
+  
   // remove newlines
   while (returnText.indexOf('\n\n') > -1) {
     returnText = returnText.replace('\n\n', '\n');    
