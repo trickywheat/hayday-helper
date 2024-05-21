@@ -145,6 +145,11 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
     returnListText = queueListText;
   }
 
+  // remove newlines 
+  while (returnListText.contains('\n\n')) {
+    returnListText.replace('\n\n', '\n');    
+  }
+
   return returnListText;
 }
 
@@ -171,6 +176,11 @@ function addToList(queueListText, guildMember, blossomEmoji) {
       // and this emoji should be added
       returnListText = queueListText.replace(matchedLine, [ ...matchedLineParts, blossomEmoji].join(' '));
     }
+  }
+
+  // remove newlines
+  while (returnListText.contains('\n\n')) {
+    returnListText.replace('\n\n', '\n');    
   }
 
   return returnListText;
