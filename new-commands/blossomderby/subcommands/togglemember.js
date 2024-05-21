@@ -145,7 +145,7 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
     returnListText = queueListText;
   }
 
-  returnListText = removeNewLines(removeFromList);  
+  returnListText = removeNewLines(returnListText);  
   return returnListText;
 }
 
@@ -174,7 +174,7 @@ function addToList(queueListText, guildMember, blossomEmoji) {
     }
   }
 
-  returnListText = removeNewLines(removeFromList);  
+  returnListText = removeNewLines(returnListText);  
   return returnListText;
 }
 
