@@ -27,7 +27,7 @@ pool.on('error', (err, client) => {
   
   // client.release()
 
-  const neighbor_name = 'Kemzow';
+  const neighbor_name = process.env.NEIGHBOR;
   await getGsheetData(neighbor_name);
 
   
