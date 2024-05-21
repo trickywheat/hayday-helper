@@ -145,11 +145,7 @@ function removeFromList(queueListText, guildMember, blossomEmoji) {
     returnListText = queueListText;
   }
 
-  // remove newlines 
-  while (returnListText.indexOf('\n\n')) {
-    returnListText.replace('\n\n', '\n');    
-  }
-
+  returnListText = removeNewLines(removeFromList);  
   return returnListText;
 }
 
@@ -178,11 +174,7 @@ function addToList(queueListText, guildMember, blossomEmoji) {
     }
   }
 
-  // remove newlines
-  while (returnListText.indexOf('\n\n') > -1) {
-    returnListText.replace('\n\n', '\n');    
-  }
-
+  returnListText = removeNewLines(removeFromList);  
   return returnListText;
 }
 
@@ -192,4 +184,15 @@ async function toggleRole(action, guildId, guildMemberId, roleId) {
 
   const discordResponse = await sendPayloadToDiscord(url, {}, method);
   return discordResponse;
+}
+
+function removeNewLines(text) {
+  let returnText = text;
+
+  // remove newlines
+  while (returnText.indexOf('\n\n') > -1) {
+    returnText = returnText.replace('\n\n', '\n');    
+  }
+
+  return returnText;
 }
