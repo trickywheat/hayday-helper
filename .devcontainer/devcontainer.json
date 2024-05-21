@@ -9,8 +9,8 @@
 
   "mounts": [
     "type=bind,source=${localEnv:HOME}/.aws,destination=/mnt/localAws,readonly=true",
-    "type=bind,source=${localWorkspaceFolder}/../trickywheat_me.bash,destination=${containerWorkspaceFolder}/../trickywheat_me.bash,readonly=true",
-    "type=bind,source=${localEnv:HOME}/.ssh/id_ed25519.trickywheat-git,destination=${containerWorkspaceFolder}/../id_ed25519.trickywheat-git,readonly=true"
+    "type=bind,source=${localWorkspaceFolder}/../trickywheat_me/,destination=${containerWorkspaceFolder}/../trickywheat_me/,readonly=true"
+    // "type=bind,source=${localEnv:HOME}/.ssh/id_ed25519.trickywheat-git,destination=${containerWorkspaceFolder}/../id_ed25519.trickywheat-git,readonly=true"
   ],
   
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
