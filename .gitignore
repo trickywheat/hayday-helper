@@ -3,3 +3,4 @@ node_modules/
 function.zip
 coverage/
 tests/*.json
+sql/test-data/

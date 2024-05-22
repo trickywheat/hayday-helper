@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import pg from 'pg';
-const { Pool } = pg
+const { Pool } = pg;
 
 import { parse } from 'csv-parse/sync';
 
@@ -16,22 +16,19 @@ const pool = new Pool({
 // the pool will emit an error on behalf of any idle clients
 // it contains if a backend error or network partition happens
 pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err)
-  process.exit(-1)
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
 });
 
 (async () => {
   // const client = await pool.connect()
   // const res = await client.query('SELECT NOW()')
   // console.log(res.rows[0])
-  
+
   // client.release()
 
   const neighbor_name = process.env.NEIGHBOR;
   await getGsheetData(neighbor_name);
-
-  
-  
 })();
 
 async function getGsheetData(neighbor_name) {
@@ -49,3 +46,4 @@ async function getGsheetData(neighbor_name) {
 
   return jsonResults;
 }
+
