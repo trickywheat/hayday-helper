@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS azure_meadows_nh.activity_check_log (
   ACTIVITY_LOG_ID UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   ACTIVITY_LOG_DATE DATE DEFAULT current_date(),
   NEIGHBOR_ID INT8 REFERENCES azure_meadows_nh.neighbors(NEIGHBOR_ID),
-  ACTIVITY_TYPE_ID INT8 REFERENCES azure_meadows_nh.activity_types(ACTIVITY_TYPE_ID),
+  ACTIVITY_TYPE_ID INT8 REFERENCES azure_meadows_nh.l_activity_types(ACTIVITY_TYPE_ID),
   ACTIVITY_LOG_NOTES STRING
 );
 
@@ -151,4 +151,18 @@ CREATE VIEW azure_meadows_nh.v_neighbor_view AS
     , dp_summary.AVERAGE_POINTS
     , ac_summary.LAST_ACTIVITY_CHECK
     , ac_summary.LAST_ACTIVITY_CHECK_POINTS
+  ;
+
+CREATE VIEW azure_meadows_nh.v_neighbor_actions AS
+  SELECT 
+      al.ACTION_LOG_DATE
+    , nh.FARM_NAME
+    , lat.ACTION_TYPE_NAME
+    , al.ACTION_LOG_NOTE
+  FROM azure_meadows_nh.action_log al
+  INNER JOIN azure_meadows_nh.neighbors AS nh
+    ON al.NEIGHBOR_ID = nh.NEIGHBOR_ID
+  INNER JOIN azure_meadows_nh.l_action_types lat
+    ON al.ACTION_TYPE_ID = lat.ACTION_TYPE_ID
+  ORDER BY 1
   ;
