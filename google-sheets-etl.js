@@ -25,8 +25,12 @@ pool.on('error', (err, client) => {
   // const res = await client.query('SELECT NOW()')
   // console.log(res.rows[0])
 
-  const neighbor_name = process.env.NEIGHBOR;
-  await insertIntoDB(neighbor_name, dbClient);
+  const neighbors = process.env.NEIGHBORS.split(',');
+
+  for (const neighbor of neighbors) {
+    await insertIntoDB(neighbor, dbClient);
+  }
+
   dbClient.release();
 })();
 
