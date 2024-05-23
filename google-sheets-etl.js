@@ -25,51 +25,79 @@ pool.on('error', (err, client) => {
   // const res = await client.query('SELECT NOW()')
   // console.log(res.rows[0])
 
-  const neighbors = process.env.NEIGHBORS.split(',');
+  const derbyDates = process.env.DERBY_DATES.split(',');
 
-  for (const neighbor of neighbors) {
-    await insertIntoDB(neighbor, dbClient);
+  for (const derbyDateIN of derbyDates) {
+    let derbyDate = new Date(derbyDateIN);
+    derbyDate = derbyDate.toISOString().split('T')[0];
+
+    await insertIntoDB(derbyDate, dbClient);
   }
 
   dbClient.release();
 })();
 
-async function insertIntoDB(neighbor_name, dbClient) {
-  console.log('Working: ' + neighbor_name);
-  const neighborRows = await getGsheetData(neighbor_name);
+async function insertIntoDB(derbyDate, dbClient) {
+  console.log('Working: ' + derbyDate);
+  const derbyHistoryRows = await getGsheetData('Derby History', derbyDate);
 
-  console.log(JSON.stringify(neighborRows));
+  console.log(JSON.stringify(derbyHistoryRows));
 
-  if (neighborRows.length == 0)
-    console.log(`Neighbor ${neighbor_name} does not have any rows.  Skipping.`);
+  if (derbyHistoryRows.length != 1) {
+    console.log(`DerbyDate ${derbyDate} does not have exactly one row.  Skipping`);
+    return false;
+  }
 
-  for (const element of neighborRows) {
-    const query = `INSERT INTO action_log 
-                      VALUES (
-                        DEFAULT, 
-                        $1, 
-                        (SELECT NEIGHBOR_ID FROM neighbors WHERE FARM_NAME = $2),
-                        (SELECT ACTION_TYPE_ID FROM l_action_types WHERE ACTION_TYPE_NAME = $3),
-                        $4
-                      )`;
-    const values = [ element.Date, element.Neighbor, element['Action Type'], element.Note.length > 0 ? `'${element.Note}'` : 'NULL' ];
+  const derbyHistory = derbyHistoryRows[0];
 
-    console.log('About to send: ' + query);
-    console.log('With values: ' + JSON.stringify(values));
-    const res = await dbClient.query(query, values);
+  const derbyParticipationRows = await getGsheetData('Derby Participation', derbyDate);
+  if (derbyParticipationRows.length == 0) {
+    console.log('derbyParticipationRows does not have any data.  Skipping');
+  } else {
+    console.log('Beginning Transaction');
+    dbClient.query('BEGIN');
+    let dhQuery = `INSERT INTO derby_history VALUES (
+        $1,
+        (SELECT DERBY_TYPE_ID FROM l_derby_types WHERE DERBY_TYPE_NAME = $2),
+        $3
+      );`;
 
-    if (res.rowCount != 1) {
-      console.log('There was an issue inserting the row: ');
+    const dhValues = [ derbyHistory['Starting Date'], derbyHistory['Type'], derbyHistory.Place ];
+
+    console.log('About to send: ' + dhQuery);
+    console.log('With values: ' + JSON.stringify(dhValues));
+    let res = await dbClient.query(dhQuery, dhValues);
+
+    const derbyParticipationArray = [];
+    const dpValues = [ derbyHistory['Starting Date'] ];
+    let i = 2;
+    // const element = derbyParticipationRows[0];
+    for (const element of derbyParticipationRows) {
+      derbyParticipationArray.push(`(DEFAULT, $1, COALESCE((SELECT NEIGHBOR_ID FROM neighbors WHERE FARM_NAME = $${i++}), 0), $${i++}, $${i++}, $${i++})`);
+      dpValues.push(element.Neighbor, element['Tasks Completed'], element['Tasks Assigned'], element.Points);
+    }
+
+    const dpQuery = `INSERT INTO derby_participation VALUES ${derbyParticipationArray.join(',')};`;
+
+    console.log('About to send: ' + dpQuery);
+    console.log('With values: ' + JSON.stringify(dpValues));
+    res = await dbClient.query(dpQuery, dpValues);
+
+    if (res.rowCount != derbyParticipationArray.length) {
+      console.log('There was an issue inserting the data.  Expected Inserted Rows = ' + derbyParticipationArray.length);
       console.log(JSON.stringify(res));
+    } else {
+      console.log('Insert was successful.  COMMITTING!');
+      res = await dbClient.query('COMMIT');
     }
   }
 }
 
-async function getGsheetData(neighbor_name) {
-  console.log('Processing Neighbor: ' + neighbor_name);
+async function getGsheetData(sheetName, derbyDate) {
+  console.log(`Processing: ${sheetName} for ${derbyDate}`);
   const gsURL = new URL(`https://docs.google.com/a/google.com/spreadsheets/d/${process.env.GSHEETS_ID}/gviz/tq?tqx=out:csv`);
-  gsURL.searchParams.append('sheet', process.env.GSHEET_NAME);
-  gsURL.searchParams.append('tq', `SELECT * WHERE B = '${neighbor_name}'`);
+  gsURL.searchParams.append('sheet', sheetName);
+  gsURL.searchParams.append('tq', `SELECT * WHERE A = date '${derbyDate}'`);
 
   console.log('Fetching URL: ' + gsURL);
 
