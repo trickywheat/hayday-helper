@@ -86,8 +86,9 @@ async function insertIntoDB(derbyDate, dbClient) {
     if (res.rowCount != derbyParticipationArray.length) {
       console.log('There was an issue inserting the data.  Expected Inserted Rows = ' + derbyParticipationArray.length);
       console.log(JSON.stringify(res));
+      res = await dbClient.query('ROLLBACK');
     } else {
-      console.log('Insert was successful.  COMMITTING!');
+      console.log('Insert was accepted.  COMMITTING!');
       res = await dbClient.query('COMMIT');
     }
   }
